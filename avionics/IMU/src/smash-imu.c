@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-#define __IMU_DEBUG
+//#define __IMU_DEBUG
 
 pthread_t IMU_THREAD;
 struct ftdi_context *ftdi;
