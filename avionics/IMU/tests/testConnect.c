@@ -3,12 +3,12 @@
 
 int main(void){
 	smashImuInit("/dev/ttyUSB0");
-//	icInit();
+	icInit();
 
 	while(1){
 		int hx = IC_TERM_WIDTH >> 1, hy = IC_TERM_HEIGHT >> 1;
 		int qx = hx >> 1;
-/*
+		
 		clear();
 		icCurrentChar = '.';
 
@@ -16,10 +16,10 @@ int main(void){
 		icDial(qx, hy, 10, ORIENTATION.x);
 		icDial(hx, hy, 10, ORIENTATION.y);
 		icDial(hx + qx, hy, 10, ORIENTATION.z);
-*/		
+		
 		usleep(10000);	
-//		icPresent();
-		printf("%f, %f, %f\n", ORIENTATION.x, ORIENTATION.y, ORIENTATION.z);
+		icPresent();
+		//printf("%f, %f, %f\n", ORIENTATION.x, ORIENTATION.y, ORIENTATION.z);
 
 	}
 

@@ -1,5 +1,7 @@
 #include "smash-imu.h"
 #include "smash-imu-decoder.h"
+#include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <math.h>
 #include <ardutalk.h>
@@ -7,6 +9,8 @@
 #include <termios.h>
 
 //#define __IMU_DEBUG
+
+#define __TO_RAD(x){ x *= M_PI / 180.0; }
 
 pthread_t IMU_THREAD;
 int IS_POLLING_IMU = 0;
@@ -26,14 +30,7 @@ int smashImuSync(const char* token){
 
 	while(bytes < len)
 		ioctl(IMU_FD, FIONREAD, &bytes);
-	//while(received[0] != '#'){
-	//	atRead(IMU_FD, received, 1);
-	//	write(1, received, 1);
-	//}
-	
 	atRead(IMU_FD, &received[0], len);
-	printf("r: %s\nt: %s\n", received, token);
-
 	return memcmp(received, token, len) == 0;
 }
 
@@ -41,6 +38,9 @@ void* __IMUpoller(void* params){
 
 	while(IS_POLLING_IMU){
 		atRead(IMU_FD, &ORIENTATION, sizeof(Vec3));
+		__TO_RAD(ORIENTATION.x);
+		__TO_RAD(ORIENTATION.y);
+		__TO_RAD(ORIENTATION.z);
 	}
 
 	return NULL;
@@ -49,9 +49,9 @@ void* __IMUpoller(void* params){
 int smashImuInit(const char* dev){
 	int ret;
 	IMU_FD = atOpen(dev, 57600);
-	atConfig(AT_BIN | AT_NCHKSUM);
+	atConfig(IMU_FD, AT_BIN | AT_NCHKSUM);
 
-	sleep(3);
+	sleep(1);
 
 	while(!synched){
 		atWrite(IMU_FD, "#ob\n",  4); // Turn on binary output
@@ -59,7 +59,7 @@ int smashImuInit(const char* dev){
 		atWrite(IMU_FD, "#oe0\n", 5); // Disable error message output
 		
 		tcflush(IMU_FD, TCIFLUSH);
-		atWrite(IMU_FD, "#s00\r\n", 6);
+		atWrite(IMU_FD, "#s00\n", 5);
 		
 		// sync 
 		if(!smashImuSync("#SYNCH00\r\n")) continue;
