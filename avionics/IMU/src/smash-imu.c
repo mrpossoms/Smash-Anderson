@@ -57,6 +57,18 @@ int __smashOpen(void){
 	return 0;
 }
 
+void __IMUtoEuler(float* Q){
+	float gx, gy, gz;
+
+	gx = 2 * (Q[1]*Q[3] - Q[0]*Q[2]);
+	gy = 2 * (Q[0]*Q[1] + Q[2]*Q[3]);
+	gz = Q[0]*Q[0] - Q[1]*Q[1] - Q[2]*Q[2] + Q[3]*Q[3];
+
+	ORIENTATION.x = atan2(2 * Q[1] * Q[2] - 2 * Q[0] * Q[3], 2 * Q[0]*Q[0] + 2 * Q[1] * Q[1] - 1);
+	ORIENTATION.y = atan2(gx, sqrt(gy*gy + gz*gz));
+	ORIENTATION.z = atan2(gy, sqrt(gx*gx + gz*gz));
+}
+
 void* __IMUpoller(void* params){
 	unsigned char ftdiBuf[1024], imuBuf[1024];
 	int bytes = 0, bufOff = 0;
@@ -96,16 +108,19 @@ void* __IMUpoller(void* params){
 		}
 
 		if(bufOff >= Qsize){
+			float gx, gy, gz;
 #ifdef __IMU_DEBUG
 			print(imuBuf);print("\n");
 #endif
 
 			smashImuDecodeQuaternion(imuBuf, Q); 
-
+			__IMUtoEuler(Q);
+/*
 			ORIENTATION.x = atan2(2 * Q[1] * Q[2] - 2 * Q[0] * Q[3], 2 * Q[0]*Q[0] + 2 * Q[1] * Q[1] - 1); // psi
 			ORIENTATION.y = -asin(2 * Q[1] * Q[3] + 2 * Q[0] * Q[2]); // theta
 			ORIENTATION.z = atan2(2 * Q[2] * Q[3] - 2 * Q[0] * Q[1], 2 * Q[0] * Q[0] + 2 * Q[3] * Q[3] - 1); // phi
-			printf("{%f, %f, %f}\n", ORIENTATION.x, ORIENTATION.y, ORIENTATION.z);
+*/
+			//printf("{%f, %f, %f}\n", ORIENTATION.x, ORIENTATION.y, ORIENTATION.z);
 			bzero(imuBuf, 1024);
 			bufOff = 0; 
 				
