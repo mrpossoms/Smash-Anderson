@@ -3,6 +3,62 @@
 
 #include <math.h>
 
+#define FABS(r){\
+	(((char*)&r)[3] &= 0x7F);\ 
+}\
+
+static inline int bet(float a, float m, float b){
+	return fabs(a - m) + fabs(m - b) == fabs(a - b);
+}
+
+typedef float vec2[2];
+typedef struct{
+	vec2 p;
+	vec2 n;
+} ray2;
+static inline void vec2_add(vec2 r, vec2 a, vec2 b){
+	int i;
+	for(i=2;i--;){
+		r[i] = a[i] + b[i];
+	}
+}
+static inline void vec2_sub(vec2 r, vec2 a, vec2 b){
+	int i;
+	for(i=2;i--;){
+		r[i] = a[i] - b[i];
+	}
+}
+
+/*
+	y = m1x + b1	y = m2x + b2
+
+	m1x + b1 = m2x + b2
+	m1x = m2x + b2 - b1
+	x(m1 - m2) = b2 - b1
+	x = (b2 - b1) / (m1 - m2)
+*/
+static inline int vec2_ray_line(vec2 itrsec, ray2 ray, vec2 v1, vec2 v2){
+	float m_ray  = ray.n[1] / ray.n[0];
+	float m_line_rise = v2[1] - v1[1], m_line_run = v2[0] - v1[0];
+	float m_line = (m_line_rise) / (m_line_run == 0 ? 0.1f : m_line_run);
+	float yint_ray = (-ray.p[0] * m_ray) + ray.p[1], yint_line = (-v1[0] * m_line) + v1[1];
+	float x = (yint_line - yint_ray) / (m_ray - m_line);
+	float dy1, dy2, dv12;
+	float sx, sy;
+
+	itrsec[0] = x;
+	itrsec[1] = x * m_ray + yint_ray;
+
+	dy1  = fabs(v1[1] - itrsec[1]);
+	dy2  = fabs(itrsec[1] - v2[1]);
+	dv12 = fabs(v1[1] - v2[1]);
+
+	sx = (itrsec[0] - ray.p[0]) / ray.n[0];
+	sy = (itrsec[1] - ray.p[1]) / ray.n[1];
+
+	return (bet(v1[0], itrsec[0], v2[0]) || bet(v1[1], itrsec[1], v2[1])) && (sx >= 0 || sy >= 0);
+}
+
 typedef float vec3[3];
 static inline void vec3_add(vec3 r, vec3 a, vec3 b)
 {
