@@ -215,17 +215,18 @@ int main(int argc, char* argv[]) {
         t=r
 */
 
+
         // TODO stabilize!
         float dTheta = quadRotor.omega + quadRotor.theta;
-        lThrottle += dTheta < 0 ? 0 : 0;
-        rThrottle += dTheta > 0 ? 0 : 0;
+        lThrottle -= dTheta + dTheta * quadRotor.omega;
+        rThrottle += dTheta + dTheta * quadRotor.omega;
 
         vec3 lThrust = {0, -lThrottle * 10, 0};
         vec3 rThrust = {0, -rThrottle * 10, 0};
         vec2 inter = {0};
         applyForce(&quadRotor, leftMotor, lThrust, dt);
         applyForce(&quadRotor, rightMotor, rThrust, dt);
-        //printf("%0.3f ---|--- %0.3f\n", lThrottle, rThrottle);
+        printf("%0.3f --- %0.3f --- %0.3f\n", lThrottle, quadRotor.omega, rThrottle);
 
         mat4x4_identity(t);
         mat4x4_scale_aniso(t, t, HEIGHT * 0.5f / (float)WIDTH, 0.5f, 1);
@@ -236,9 +237,9 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
         mesh(l, MESH_SEGMENTS, r);
 
-        SDL_SetRenderDrawColor(renderer, (int)(128 * lThrottle * lThrottle), 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, (int)(16 + 64 * lThrottle), 0, 0, 255);
         mesh(lProp, 2, r);
-        SDL_SetRenderDrawColor(renderer, (int)(128 * rThrottle * lThrottle), 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, (int)(16 + 64 * rThrottle), 0, 0, 255);
         mesh(rProp, 2, r);
 
         SDL_RenderPresent(renderer);
