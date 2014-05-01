@@ -57,7 +57,6 @@ while(elapsed < timeLimit){
 	var temp = new Date();
 	dt = (temp - last) / 1000;
 
-
 	seek(body, dt);
 
 	if(Math.abs(body.x - target) < 0.1){
