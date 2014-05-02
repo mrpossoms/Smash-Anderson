@@ -3,6 +3,11 @@
 #include <Wire.h>
 #include <ArduTalk.h>
 
+//     ___             _            _      
+//    / __|___ _ _  __| |_ __ _ _ _| |_ ___
+//   | (__/ _ \ ' \(_-<  _/ _` | ' \  _(_-<
+//    \___\___/_||_/__/\__\__,_|_||_\__/__/
+//                                         
 #define YAW   0
 #define PITCH 1 
 #define ROLL  2
@@ -15,6 +20,11 @@
 
 #define PI_POLL_DST2GND 0x01
 
+//    ___ _               _      
+//   / __| |_ _ _ _  _ __| |_ ___
+//   \__ \  _| '_| || / _|  _(_-<
+//   |___/\__|_|  \_,_\__|\__/__/
+//                               
 typedef struct{
   float orientation[3]; // yaw, pitch, roll
   float position[3];    // gps coordinates for location
@@ -37,6 +47,11 @@ typedef struct{
   float distToGround;
 } stateMsg;
 
+//     ___ _     _          _    
+//    / __| |___| |__  __ _| |___
+//   | (_ | / _ \ '_ \/ _` | (_-<
+//    \___|_\___/_.__/\__,_|_/__/
+//                               
 Servo rotors[4];
 int rotorTarget[4];
 int rotorCurrent[4];
@@ -46,6 +61,12 @@ unsigned long lastFltCmpContact, lastTime;
 stateMsg relay = { 0 };
 
 ArduTalk Radio(&Serial, 9600);
+
+//    ___             _   _             
+//   | __|  _ _ _  __| |_(_)___ _ _  ___
+//   | _| || | ' \/ _|  _| / _ \ ' \(_-<
+//   |_| \_,_|_||_\__|\__|_\___/_||_/__/
+//                                      
 //-------------------------------------------------------------------------------
 void setup(){
   // hook up the servos, and set their speeds to 0
@@ -102,6 +123,7 @@ void I2Crequested(){
 unsigned long timeLanding = 0;
 unsigned char lastRotorVals[4];
 int emergencylastDistToGround;
+char emergency = 0;
 
 void emergencyLanding(unsigned long dt){
   float lRatio = timeLanding / 10000.0f;
@@ -109,16 +131,24 @@ void emergencyLanding(unsigned long dt){
   int distToGround = cmToGround();
   int delta = distToGround - emergencylastDistToGround;
   float vz = (delta / 100.0) * (dt / 1000.0);
+  unsigned char doOffset = 0, offset = 0;
   
   // if we are decending faster than 0.25 m/s and we are within the measurement
   // range of the ultrasonic sensor, then make a modification to the throttle target
   if(vz < -0.25f && distToGround < 1000){
-    
+    doOffset = 1;
   }
   
   // power down slowly
   for(int i = 4; i--;){
-    rotorTarget[i] = (unsigned char)((1 - tRatio) * lastRotorVals[4]); 
+    unsigned char lr = lastRotorVals[i];
+    if(doOffset){
+      // dx * y = -0.25
+      // 
+      offset = (unsigned char)((((1 - tRatio) * lr - (1 - lRatio) * lr)) / -0.25);
+    }
+    
+    rotorTarget[i] = (unsigned char)((1 - tRatio) * lastRotorVals[i]) + offset; 
   }
   
   emergencylastDistToGround = distToGround;
@@ -130,7 +160,10 @@ void loop(){
   unsigned long dt = now - lastTime;
   
   if(lastContact > 1000){
-    memcpy(lastRotorVals, rotorCurrent, sizeof(unsigned char) << 2);
+    if(!emergency){
+      memcpy(lastRotorVals, rotorCurrent, sizeof(unsigned char) << 2);
+      emergency = 1;
+    }
     emergencyLanding(dt);   
   }
   
@@ -156,7 +189,8 @@ void serialEvent(){
        rotorTarget[i] = received.rotors[i];
       }
     }
-    
+
+    emergency = 0;    
     lastFltCmpContact = millis();
   }
 }
