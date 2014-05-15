@@ -15,11 +15,11 @@ typedef float LocationStates[3];
 int  smashTelemetryInit(const char* dev, int addr);
 void smashTelemetryShutdown(int fd);
 
-void smashTelSendThrottles  (int fd, RotorStates       throttles);
-void smashTelSendOrientation(int fd, OrientationStates orientation);
-void smashTelSendLocation   (int fd, LocationStates    location);
+int  smashTelSendThrottles  (int fd, RotorStates       throttles);
+int  smashTelSendOrientation(int fd, OrientationStates orientation);
+int  smashTelSendLocation   (int fd, LocationStates    location);
 
-void smashTelRecieveThrottles  (int fd, RotorStates       throttles);
-void smashTelRecieveElevation  (int fd, byte*             elevation);
+int  smashTelRecieveThrottles  (int fd, RotorStates    throttles);
+int  smashTelRecieveElevation  (int fd, byte*          elevation);
 
 #endif

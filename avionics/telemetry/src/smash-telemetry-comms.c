@@ -3,12 +3,25 @@
 
 #define DELAY 15000
 
+byte __chksum(byte* data, size_t len){
+	byte sum = 0;
+	for(;len--;){
+		sum ^= data[len];
+	}
+
+	return sum;
+}
+
 int __send(int fd, byte msgType, void* msg, size_t size){
 	int msgSize = 0;
-	byte buf[msgSize = (size + 1)];
+	byte buf[msgSize = (size + 2)];
 
+	// setup the message packet, including the
+	// message type, data and checksum
 	buf[0] = MSG_TYPE_ROTORS;
 	memcpy(buf + 1, msg, size);
+	(buf + 1)[size] = __chksum((byte*), size);
+
 	if(write(fd, buf, msgSize) != msgSize){
 		// ERROR
 	}
@@ -19,23 +32,34 @@ int __send(int fd, byte msgType, void* msg, size_t size){
 }
 //-----------------------------------------------------------------------
 int __receieve(int fd, byte msgType, void* msg, size_t size){
+	byte buf[size + 1];
 	if(write(fd, &msgType, 1) != 1){
 		// ERROR
-		return -11;
+		return -1;
 	}
 	usleep(DELAY);
 
-	if(read(fd, msg, size) < size){
+	// read the response message
+	if(read(fd, buf, size) < size){
 		// ERROR
 		return -2;
 	}
+
+	// recalculate the checksum, check against
+	// the transmitted checksum
+	if(__chksum(buf, size) != buf[size]){
+		return -3;
+	}
+
+	// copy the verified message to the destination
+	memcpy(msg, buf, size);
 	usleep(DELAY);
 	
 	return 0;
 }
 //-----------------------------------------------------------------------
-void smashTelSendThrottles(int fd, RotorStates throttles){
-	__send(
+int smashTelSendThrottles(int fd, RotorStates throttles){
+	return __send(
 		fd,
 		MSG_TYPE_ROTORS,
 		(void*)throttles,
@@ -43,8 +67,8 @@ void smashTelSendThrottles(int fd, RotorStates throttles){
 	);
 }
 //-----------------------------------------------------------------------
-void smashTelSendOrientation(int fd, OrientationStates orientation){
-	__send(
+int smashTelSendOrientation(int fd, OrientationStates orientation){
+	return __send(
 		fd,
 		MSG_TYPE_ORI,
 		(void*)orientation,
@@ -52,8 +76,8 @@ void smashTelSendOrientation(int fd, OrientationStates orientation){
 	);
 }
 //-----------------------------------------------------------------------
-void smashTelSendLocation(int fd, LocationStates location){
-	__send(
+int smashTelSendLocation(int fd, LocationStates location){
+	return __send(
 		fd,
 		MSG_TYPE_LOC,
 		(void*)location,
@@ -61,8 +85,8 @@ void smashTelSendLocation(int fd, LocationStates location){
 	);
 }
 //-----------------------------------------------------------------------
-void smashTelRecieveThrottles(int fd, RotorStates throttles){
-	__receieve(
+int smashTelRecieveThrottles(int fd, RotorStates throttles){
+	return __receieve(
 		fd,
 		MSG_TYPE_ROTORS,
 		(void*)throttles,
@@ -70,8 +94,8 @@ void smashTelRecieveThrottles(int fd, RotorStates throttles){
 	);
 }
 //-----------------------------------------------------------------------
-void smashTelRecieveElevation(int fd, byte* elevation){
-	__receieve(
+int smashTelRecieveElevation(int fd, byte* elevation){
+	return __receieve(
 		fd,
 		MSG_TYPE_ELEVATION,
 		(void*)elevation,
