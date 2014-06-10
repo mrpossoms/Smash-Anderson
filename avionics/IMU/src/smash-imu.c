@@ -100,13 +100,14 @@ int smashImuInit(const char* dev, void (*onChange)(float*)){
 	sleep(3);
 
 	do{
-	atWrite(IMU_FD, "#ob",  3); // Turn on binary output
-	atWrite(IMU_FD, "#o1",  3); // Turn on continuous streaming output
-	atWrite(IMU_FD, "#oe0", 4); // Disable error message output
-	
-//	tcflush(IMU_FD, TCIFLUSH);
-	atWrite(IMU_FD, "#s00", 4);
-	
+
+		atWrite(IMU_FD, "#ob",  3); // Turn on binary output
+		atWrite(IMU_FD, "#o1",  3); // Turn on continuous streaming output
+		atWrite(IMU_FD, "#oe0", 4); // Disable error message output
+		
+		tcflush(IMU_FD, TCIFLUSH);
+		atWrite(IMU_FD, "#s00", 4);
+		
 	// sync 
 	}while(smashImuSync("#SYNCH00\r\n"));
 	synched = 1;

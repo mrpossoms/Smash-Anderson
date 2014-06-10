@@ -2,7 +2,7 @@
 #include <string.h>
 #include "smash-imu-decoder.h"
 
-int smashImuDecodeQuaternion(unsigned char* buf, float* Q){
+int smashImuDecodeQuaternion(char* buf, float* Q){
 	char *delim = ", ";
 	char *brkt, *word;
 	char temp[1024];
@@ -28,7 +28,7 @@ int smashImuDecodeQuaternion(unsigned char* buf, float* Q){
 	
 		memcpy(&Q[i++], &temp, sizeof(float));
 
-	}while(word = strtok(NULL, delim));
+	}while((word = strtok(NULL, delim)));
 		
 	return -1; // ran out of data, before a quaternion was read
 }

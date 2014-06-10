@@ -31,8 +31,9 @@ void onChange(float* ori){
 	drawDials(ori);
 }
 
-int main(void){
-	smashImuInit("/dev/ttyUSB0", onChange);
+int main(int argc, char* argv[]){
+	if(argc != 2) return 1;
+	smashImuInit(argv[1], onChange);
 	icInit();
 
 	while(1){
