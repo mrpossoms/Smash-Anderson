@@ -30,20 +30,26 @@ void endianSwap(float* f){
 int smashImuSync(const char* token){
 	int len = strlen(token), off = 0;
 	char received;
+	unsigned char timeOut = 255;
 
 	while(1){
 		usleep(10000);
 		atRead(IMU_FD, &received, 1);
 		if(received == token[off]){
-			++off;
+			++off; 
+			timeOut = 255;
 
 			if(off == len)
 				return 1;
 
 			continue;
 		}
-	
+
+ 		--timeOut;
 		off = 0;
+
+		if(timeOut == 0)
+			atWrite(IMU_FD, "#s00\n", 5);
 	}
 }
 
@@ -54,7 +60,7 @@ void* __IMUpoller(void* params){
 	while(IS_POLLING_IMU){
 		
 		if(atAvailable(IMU_FD) < VEC3){
-			usleep(10000);
+			usleep(1000);
 			continue;
 		}
 
