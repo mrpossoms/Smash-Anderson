@@ -1,9 +1,8 @@
 #ifndef SMASH_IMU
 #define SMASH_IMU
-#include "vec3.h"
 	
-extern Vec3 ORIENTATION;
+extern float ORIENTATION[3];
 
-int smashImuInit();
+int smashImuInit(const char* dev, void (*onChange)(float*));
 int smashImuShutdown();
 #endif
