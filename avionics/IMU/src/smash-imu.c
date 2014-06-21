@@ -12,6 +12,8 @@
 
 //#define __IMU_DEBUG
 #define VEC3 sizeof(float) * 3
+#define VEC6 sizeof(float) * 6
+
 
 const float DEG_TO_RAD = (M_PI / 180.0f);
 
@@ -19,7 +21,7 @@ pthread_t IMU_THREAD;
 int IS_POLLING_IMU = 0;
 int IMU_FD = -1;
 int synched = 0;
-float ORIENTATION[3];
+float ORIENTATION[6];
 void (*changeCallback)(float*);
 
 void endianSwap(float* f){
@@ -61,26 +63,26 @@ int smashImuSync(const char* token){
 
 void* __IMUpoller(void* params){
 	int i = 0, bytes = 0;
-	float temp[3];
+	float temp[6];
 
 	while(IS_POLLING_IMU){
 		
-		if(atAvailable(IMU_FD) < VEC3){
+		if(atAvailable(IMU_FD) < VEC6){
 			usleep(1000);
 			continue;
 		}
 
-		if((bytes = atRead(IMU_FD, temp, VEC3)) == VEC3){
+		if((bytes = atRead(IMU_FD, temp, VEC6)) == VEC6){
 			//endianSwap(&ORIENTATION[0]);
 			//endianSwap(&ORIENTATION[1]);
 			//endianSwap(&ORIENTATION[2]);
-			memcpy(ORIENTATION, temp, VEC3);
+			memcpy(ORIENTATION, temp, VEC6);
 
 			ORIENTATION[0] *= DEG_TO_RAD;
 			ORIENTATION[1] *= DEG_TO_RAD;
 			ORIENTATION[2] *= DEG_TO_RAD;
 
-			printf("OK %d (%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2]);
+			printf("OK %d (%f, %f, %f) w(%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);
 			changeCallback(ORIENTATION);
 		}
 		else
@@ -110,6 +112,7 @@ int smashImuInit(const char* dev, void (*onChange)(float*)){
 
 		atWrite(IMU_FD, "#ob",  3); // Turn on binary output
 		atWrite(IMU_FD, "#o1",  3); // Turn on continuous streaming output
+		atWrite(IMU_FD, "#o2",  3); // Turn inclusion of omega
 		atWrite(IMU_FD, "#oe0", 4); // Disable error message output
 		
 		tcflush(IMU_FD, TCIFLUSH);

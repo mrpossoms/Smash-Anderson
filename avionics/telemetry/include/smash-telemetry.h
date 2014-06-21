@@ -12,7 +12,7 @@ typedef byte  OrientationStates[3];
 typedef byte  RotorStates[4];
 typedef float LocationStates[3];
 
-int  smashTelemetryInit(const char* dev, int addr);
+int  smashTelemetryInit(const char* dev);
 void smashTelemetryShutdown(int fd);
 
 int  smashTelSendThrottles  (int fd, RotorStates       throttles);

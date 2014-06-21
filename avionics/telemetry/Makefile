@@ -2,7 +2,7 @@ FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
 INC=./include
 DST=./lib
-LINK=-string
+LINK=-string -lardutalk
 LIB=libSmashTelemetry.a
 
 TSTINC=./tests/include
