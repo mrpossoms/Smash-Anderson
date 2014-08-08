@@ -4,7 +4,7 @@ FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
 INC=./include
 DST=./lib
-LINK=-lNEMA -lsmash-imu -lardutalk -lindicurses -lpthread -lm -lcurses
+LINK=-lNEMA -lsmash-imu -lControls -lardutalk -lindicurses -lpthread -lm -lcurses
 LIB=lib$(NAME).a
 
 TSTINC=./tests/include

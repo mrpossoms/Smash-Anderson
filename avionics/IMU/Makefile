@@ -8,3 +8,4 @@ all:
 	$(CC) -I $(INC) -I $(INC_VEC) -c $(SRC)/smash-imu.c -o smash-imu 
 	ar rcs libsmash-imu.a smash-imu smash-imu-decoder
 	rm smash-imu smash-imu-decoder 
+

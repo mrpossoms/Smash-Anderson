@@ -15,7 +15,7 @@ int smashSpeedInit(const char* dev){
 void smashSpeedSet(int fd, unsigned char* rotors){
 	int i = 0;
 	for(i = 4; i--;){
-		char buf[10] = {0};
+		char buf[8] = {0};
 		sprintf(buf, "%d=%d%\n", i, (int)(rotors[i] / 2.55f));
 		write(fd, buf, strlen(buf));
 	}	
