@@ -29,12 +29,12 @@ WIDTH = 640;
 HEIGHT = 480;
 
 PidState altState = {
-    .Kp = KP,
-    .Ki = KI,
-    .Kd = KD,
+    .Kp = 2.f,
+    .Ki = 0.75f,
+    .Kd = 0.8f,
     .lastError = 0,
     .integral = 0,
-    .target = 0
+    .target = 0.75f
 };
 
 PidState rollState = {
@@ -257,6 +257,7 @@ int main(int argc, char* argv[]) {
         mat4x4_identity(t);
         mat4x4_scale_aniso(t, t, HEIGHT * 0.5f / (float)WIDTH, 0.5f, 1);
         mat4x4_rotate(r, t, 0, 0, 1, quadRotor.theta);
+        mat4x4_translate_in_place(r, quadRotor.position[0], -quadRotor.position[1], 0);
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);

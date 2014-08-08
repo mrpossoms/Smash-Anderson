@@ -1,3 +1,4 @@
+CC=gcc
 BIN=./../
 INC=-I./../include
 INC_VEC=./../../../math/vector/include
@@ -7,5 +8,5 @@ LNK_GL=-lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework Co
 
 all:
 	#gcc -I $(INC) testDecodeQuaternion.c $(BIN)/smash-imu-decoder -o testDecodeQuaternion	
-	gcc $(INC) -I $(INC_VEC) $(LIB) testConnect.c -o testConnect $(BIN)/libsmash-imu.a $(LINK)
-	gcc $(INC) -I $(INC_VEC) $(LIB) testGizmo.c -o testGizmo $(BIN)/libsmash-imu.a $(LINK) $(LNK_GL)	
+	$(CC) $(INC) -I $(INC_VEC) $(LIB) testConnect.c -o testConnect $(BIN)/libsmash-imu.a $(LINK)
+	$(CC) $(INC) -I $(INC_VEC) $(LIB) testGizmo.c -o testGizmo $(BIN)/libsmash-imu.a $(LINK) $(LNK_GL)	

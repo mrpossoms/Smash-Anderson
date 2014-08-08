@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
 
 	glfwSetKeyCallback(window, key_callback);
 	glfwMakeContextCurrent(window);
+	glPointSize(3);
 
 	smashImuInit(argv[1], onChange);
 

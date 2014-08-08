@@ -1,5 +1,6 @@
 #include "smash-imu.h"
 #include <indicurses.h>
+#include <stdio.h>
 
 void drawDials(float* ori){
 	int hx = IC_TERM_WIDTH >> 1, hy = IC_TERM_HEIGHT >> 1;

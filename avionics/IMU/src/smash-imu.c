@@ -41,7 +41,10 @@ int smashImuSync(const char* token){
 			++off; 
 			timeOut = 0;
 
+#ifdef __IMU_DEBUG
 			write(1, &received, 1);
+#endif
+
 			if(off == len){
 				return 0;
 			}
@@ -52,10 +55,14 @@ int smashImuSync(const char* token){
  		++timeOut;
 		off = 0;
 
+#ifdef __IMU_DEBUG
 		printf("%u\n", timeOut);
+#endif
 
 		if(timeOut > len){
+#ifdef __IMU_DEBUG
 			write(1, ".", 1);
+#endif
 			return 1;
 		}
 	}
@@ -73,20 +80,23 @@ void* __IMUpoller(void* params){
 		}
 
 		if((bytes = atRead(IMU_FD, temp, VEC6)) == VEC6){
-			//endianSwap(&ORIENTATION[0]);
-			//endianSwap(&ORIENTATION[1]);
-			//endianSwap(&ORIENTATION[2]);
 			memcpy(ORIENTATION, temp, VEC6);
 
 			ORIENTATION[0] *= DEG_TO_RAD;
 			ORIENTATION[1] *= DEG_TO_RAD;
 			ORIENTATION[2] *= DEG_TO_RAD;
 
+#ifdef __IMU_DEBUG
 			printf("OK %d (%f, %f, %f) w(%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);
+#endif
+
 			changeCallback(ORIENTATION);
 		}
-		else
+		else{
+#ifdef __IMU_DEBUG
 			printf("Read %d (%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2]);
+#endif
+		}
 	}
 
 	return NULL;
@@ -112,7 +122,7 @@ int smashImuInit(const char* dev, void (*onChange)(float*)){
 
 		atWrite(IMU_FD, "#ob",  3); // Turn on binary output
 		atWrite(IMU_FD, "#o1",  3); // Turn on continuous streaming output
-		atWrite(IMU_FD, "#o2",  3); // Turn inclusion of omega
+		atWrite(IMU_FD, "#o2",  3); // Turn on inclusion of omega
 		atWrite(IMU_FD, "#oe0", 4); // Disable error message output
 		
 		tcflush(IMU_FD, TCIFLUSH);

@@ -12,6 +12,14 @@ typedef byte  OrientationStates[3];
 typedef byte  RotorStates[4];
 typedef float LocationStates[3];
 
+
+union SmashMessage{
+	OrientationStates orientation,
+	RotorStates       throttles,
+	LocationStates    location,
+	byte              elevation
+};
+
 int  smashTelemetryInit(const char* dev);
 void smashTelemetryShutdown(int fd);
 
