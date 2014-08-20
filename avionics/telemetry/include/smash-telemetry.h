@@ -1,10 +1,8 @@
 #ifndef SMASH_TELEM
 #define SMASH_TELEM
 
-#define MSG_TYPE_ROTORS    0
-#define MSG_TYPE_ORI       1
-#define MSG_TYPE_LOC       2
-#define MSG_TYPE_ELEVATION 3
+#define MSG_CODE_THROTTLE 0x01
+#define	MSG_CODE_STATUS   0x02
 
 typedef unsigned char byte;
 
@@ -12,22 +10,18 @@ typedef byte  OrientationStates[3];
 typedef byte  RotorStates[4];
 typedef float LocationStates[3];
 
-
-union SmashMessage{
-	OrientationStates orientation,
-	RotorStates       throttles,
-	LocationStates    location,
-	byte              elevation
-};
+typedef struct{
+	float       yawPitchRoll[3];
+	float       latLongAlt[3];
+	RotorStates throttles;
+} SmashStatusMsg;
 
 int  smashTelemetryInit(const char* dev);
 void smashTelemetryShutdown(int fd);
 
-int  smashTelSendThrottles  (int fd, RotorStates       throttles);
-int  smashTelSendOrientation(int fd, OrientationStates orientation);
-int  smashTelSendLocation   (int fd, LocationStates    location);
+int smashTelSendStatus(int fd, SmashStatusMsg* status);
 
-int  smashTelRecieveThrottles  (int fd, RotorStates    throttles);
-int  smashTelRecieveElevation  (int fd, byte*          elevation);
+int smashReceiveCode(int fd, int* type);
+int smashReceiveMsg (int fd, void* msg);
 
 #endif

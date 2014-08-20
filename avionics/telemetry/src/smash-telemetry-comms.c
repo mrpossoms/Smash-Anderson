@@ -4,6 +4,9 @@
 
 #define DELAY 18000
 
+int __readyForMsg = 0;
+int __msgCode;
+
 void __dump(char* buf, int len){
 	int i = 0;	
 	for(i = 0; i < len; i++){
@@ -13,7 +16,7 @@ void __dump(char* buf, int len){
 	}write(1, "\n", 1);
 }
 
-int __send(int fd, byte msgType, void* msg, size_t size){
+int __send(int fd, void* msg, size_t size){
 	if(atWrite(fd, msg, size) != size){
 		// ERROR
 	}
@@ -23,7 +26,7 @@ int __send(int fd, byte msgType, void* msg, size_t size){
 	return 0;
 }
 //-----------------------------------------------------------------------
-int __receieve(int fd, byte msgType, void* msg, size_t size){
+int __receieve(int fd, void* msg, size_t size){
 	// read the response message
 	if(atRead(fd, msg, size) < size){
 		// ERROR
@@ -36,47 +39,48 @@ int __receieve(int fd, byte msgType, void* msg, size_t size){
 	return 0;
 }
 //-----------------------------------------------------------------------
-int smashTelSendThrottles(int fd, RotorStates throttles){
-	return __send(
-		fd,
-		MSG_TYPE_ROTORS,
-		(void*)throttles,
-		sizeof(RotorStates)
-	);
+void smashTelemetryShutdown(int fd){
+	close(fd);
 }
 //-----------------------------------------------------------------------
-int smashTelSendOrientation(int fd, OrientationStates orientation){
-	return __send(
-		fd,
-		MSG_TYPE_ORI,
-		(void*)orientation,
-		sizeof(OrientationStates)
-	);
+int smashTelSendStatus(int fd, SmashStatusMsg* status){
+	int result = 0;
+	int statusCode = MSG_CODE_STATUS;
+
+	// inform the receiver of the message type
+	if(result = __send(fd, &statusCode, sizeof(int))){
+		return result;
+	}
+
+	// send the status message itself
+	if(result = __send(fd, status, sizeof(SmashStatusMsg))){
+		return result;
+	}
+
+	return 0;
 }
 //-----------------------------------------------------------------------
-int smashTelSendLocation(int fd, LocationStates location){
-	return __send(
-		fd,
-		MSG_TYPE_LOC,
-		(void*)location,
-		sizeof(LocationStates)
-	);
+int smashReceiveCode(int fd, int* type){
+	__receieve(fd, type, sizeof(int));
+
+	__msgCode = *type;
+	__readyForMsg = 1;
 }
 //-----------------------------------------------------------------------
-int smashTelRecieveThrottles(int fd, RotorStates throttles){
-	return __receieve(
-		fd,
-		MSG_TYPE_ROTORS,
-		(void*)throttles,
-		sizeof(RotorStates)
-	);
-}
-//-----------------------------------------------------------------------
-int smashTelRecieveElevation(int fd, byte* elevation){
-	return __receieve(
-		fd,
-		MSG_TYPE_ELEVATION,
-		(void*)elevation,
-		sizeof(byte)
-	);
+int smashReceiveMsg (int fd, void* msg){
+	int result = 0;
+	if(!__readyForMsg) return -1;
+
+	switch(__msgCode){
+		case MSG_CODE_THROTTLE:
+			result = __receieve(fd, msg, sizeof(RotorStates));
+			break;
+		case MSG_CODE_STATUS:
+			result = __receieve(fd, msg, sizeof(SmashStatusMsg));
+			break;
+	}
+
+	__readyForMsg = 0;
+
+	return result;
 }
