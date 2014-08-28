@@ -1,6 +1,8 @@
 #include "smash-telemetry.h"
 #include <ardutalk.h>
+#include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #define DELAY 18000
 
@@ -48,12 +50,12 @@ int smashTelSendStatus(int fd, SmashStatusMsg* status){
 	int statusCode = MSG_CODE_STATUS;
 
 	// inform the receiver of the message type
-	if(result = __send(fd, &statusCode, sizeof(int))){
+	if((result = __send(fd, &statusCode, sizeof(int)))){
 		return result;
 	}
 
 	// send the status message itself
-	if(result = __send(fd, status, sizeof(SmashStatusMsg))){
+	if((result = __send(fd, status, sizeof(SmashStatusMsg)))){
 		return result;
 	}
 
@@ -61,10 +63,14 @@ int smashTelSendStatus(int fd, SmashStatusMsg* status){
 }
 //-----------------------------------------------------------------------
 int smashReceiveCode(int fd, int* type){
-	__receieve(fd, type, sizeof(int));
+	if(__receieve(fd, type, sizeof(int))){
+		return -1;
+	}
 
 	__msgCode = *type;
 	__readyForMsg = 1;
+
+	return 0;
 }
 //-----------------------------------------------------------------------
 int smashReceiveMsg (int fd, void* msg){
