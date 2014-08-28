@@ -4,7 +4,7 @@ FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
 INC=./include  -I /Library/Frameworks/SDL2.framework/Headers
 DST=./lib
-LINK= -lSmashTelemetry -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
+LINK= -lardutalk -lSmashTelemetry -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
 LIB=lib$(NAME).a
 
 TSTINC=./tests/include

@@ -90,3 +90,21 @@ int smashReceiveMsg (int fd, void* msg){
 
 	return result;
 }
+//-----------------------------------------------------------------------
+int smashSendMessage(int fd, int type, void* msg){
+	int result = 0;
+	if(__send(fd, type, sizeof(int))){
+		return -1;
+	}
+
+	switch(type){
+		case MSG_CODE_THROTTLE:
+			result = __send(fd, msg, sizeof(RotorStates));
+			break;
+		case MSG_CODE_STATUS:
+			result = __send(fd, msg, sizeof(SmashStatusMsg));
+			break;	
+	}
+
+	return result;
+}

@@ -5,6 +5,7 @@
 #include "controls.h"
 
 GLFWwindow* window = NULL;
+int radio_fd;
 
 static void updateView(){
 	float ratio;
@@ -19,6 +20,15 @@ static void updateView(){
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+static void throttle_callback(float x, float y){
+	byte t = (byte)(y * 255.0f);
+	RotorStates throttle = {
+		t, t, t, t
+	};
+
+	smashSendMessage(radio_fd, MSG_CODE_THROTTLE, throttle);
 }
 
 int main(int argc, char* argv[]){
@@ -38,6 +48,10 @@ int main(int argc, char* argv[]){
 		return 2;
 	}
 
+	if(!(radio_fd = smashTelemetryInit(argv[1]))){
+		return 3;
+	}
+
 	sleep(1);
 
 	glfwSetKeyCallback(window, key_callback);
@@ -45,7 +59,7 @@ int main(int argc, char* argv[]){
 	glPointSize(3);
 	glEnable(GL_DEPTH_TEST);
 
-	controlsSetup(NULL);
+	controlsSetup(throttle_callback);
 
 	while(!glfwWindowShouldClose(window)){
 		updateView();
