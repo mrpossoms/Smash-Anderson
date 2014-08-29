@@ -23,6 +23,8 @@ tests: testlib
 	$(foreach test, $(TSTS), echo $(test);)
 install:
 	echo 'This will install the library'
+	cp $(INC)/*.h /usr/include
+	cp $(DST)/*.a /usr/lib
 clean:
 	find ./ -iname "*.a" -exec rm {} \;
 		find ./ -iname "*.o" -exec rm {} \;

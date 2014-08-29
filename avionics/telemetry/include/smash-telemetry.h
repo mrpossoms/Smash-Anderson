@@ -24,4 +24,6 @@ int smashTelSendStatus(int fd, SmashStatusMsg* status);
 int smashReceiveCode(int fd, int* type);
 int smashReceiveMsg (int fd, void* msg);
 
+int smashSendMessage(int fd, int type, void* msg);
+
 #endif
