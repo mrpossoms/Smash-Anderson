@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <assert.h>
 #include <GLFW/glfw3.h>
 #include "controls.h"
 
@@ -16,8 +17,11 @@ struct JoystickState
 static int CONTROLS_JOYSTICK_COUNT = 0;
 static struct JoystickState CONTROLS_JOYSTICKS[10] = {0};
 static struct JoystickState* CONTROLS_THROTTLE_STICK = NULL;
+void (*CONTROLS_THROTTLE_CALLBACK)(float, float);
 
 int controlsSetup(throttleCallback cb){
+	CONTROLS_THROTTLE_CALLBACK = cb;
+
 	// find the number of joysticks connected
 	for(int i = 0; i < 10; ++i){
 		if(glfwJoystickPresent(i)){
@@ -59,7 +63,7 @@ int controlsSetup(throttleCallback cb){
 			memcpy(stick->values, values, sizeof(float) * stick->axes);
 
 			// this stick probably moved!
-			if(abs(lCurrent - lLast) > 0.5f){
+			if(fabs(lCurrent - lLast) > 0.01f){
 				CONTROLS_THROTTLE_STICK = stick;
 				return 0;
 			}
@@ -67,4 +71,29 @@ int controlsSetup(throttleCallback cb){
 
 		usleep(10000);
 	}
+}
+
+int controlsPoll(){
+	struct JoystickState* stick = CONTROLS_THROTTLE_STICK;
+	const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+
+	assert(stick->axes >= 2);
+
+	// dot the current and last joystick readings
+	float lCurrent = 0, lLast = 0;
+	for(int j = stick->axes; j--;){
+		lCurrent += values[j] * values[j];
+		lLast    += stick->values[j] * stick->values[j]; 
+	}
+
+	// retain the new measurement
+	memcpy(stick->values, values, sizeof(float) * stick->axes);
+
+	// this stick probably moved!
+	if(fabs(lCurrent - lLast) > 0.001f){
+		CONTROLS_THROTTLE_CALLBACK(values[0], values[1]);
+		return 0;
+	}
+
+	return -1;
 }

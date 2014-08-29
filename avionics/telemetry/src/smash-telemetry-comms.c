@@ -93,7 +93,8 @@ int smashReceiveMsg (int fd, void* msg){
 //-----------------------------------------------------------------------
 int smashSendMessage(int fd, int type, void* msg){
 	int result = 0;
-	if(__send(fd, type, sizeof(int))){
+
+	if(__send(fd, &type, sizeof(int))){
 		return -1;
 	}
 

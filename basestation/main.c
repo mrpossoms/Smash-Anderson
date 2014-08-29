@@ -23,12 +23,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 static void throttle_callback(float x, float y){
+	y = y > 0 ? 0 : -y;
 	byte t = (byte)(y * 255.0f);
 	RotorStates throttle = {
 		t, t, t, t
 	};
-
-	smashSendMessage(radio_fd, MSG_CODE_THROTTLE, throttle);
+	printf("Sending message to %d %f %f %d\n", radio_fd, x, y, throttle[0]);
+	smashSendMessage(radio_fd, MSG_CODE_THROTTLE, &throttle);
 }
 
 int main(int argc, char* argv[]){
@@ -59,11 +60,17 @@ int main(int argc, char* argv[]){
 	glPointSize(3);
 	glEnable(GL_DEPTH_TEST);
 
-	controlsSetup(throttle_callback);
+	if(controlsSetup(throttle_callback)){
+		return 4;
+	}
+
+	printf("Stick selected!\n");
 
 	while(!glfwWindowShouldClose(window)){
 		updateView();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+		controlsPoll();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

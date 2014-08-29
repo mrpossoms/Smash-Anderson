@@ -4,5 +4,6 @@
 typedef void(throttleCallback)(float, float);
 
 int controlsSetup(throttleCallback cb);
+int controlsPoll();
 
 #endif
