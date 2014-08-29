@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <math.h>
 #include <smash-imu.h>
 #include <libNEMA.h>
@@ -23,6 +24,14 @@ int main(int argc, const char* argv[]){
 	int fd_rotors = -1;
 	char gps_buf[255] = {0};	
 	GpsState gps_st = {0};
+
+	// start servo driver and check the status
+	printf("Preparing servo driver...");
+	if(system("sh ./servo.sh")){
+		printf("Error!\n");
+		return -1;
+	}
+	printf("OK!\n");
 
 	smashImuInit(IMU_DEV);
 	//fd_gps    = lnConnect(GPS_DEV, B57600);
