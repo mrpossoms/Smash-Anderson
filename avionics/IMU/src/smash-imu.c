@@ -30,26 +30,32 @@ void endianSwap(float* f){
 int smashImuSync(const char* token){
 	int len = strlen(token), off = 0;
 	char received;
-	unsigned char timeOut = 255;
+	unsigned char timeOut = 0;
 
 	while(1){
 		usleep(10000);
 		atRead(IMU_FD, &received, 1);
 		if(received == token[off]){
 			++off; 
-			timeOut = 255;
+			timeOut = 0;
 
-			if(off == len)
-				return 1;
+			write(1, &received, 1);
+			if(off == len){
+				return 0;
+			}
 
 			continue;
 		}
 
- 		--timeOut;
+ 		++timeOut;
 		off = 0;
 
-		if(timeOut == 0)
-			atWrite(IMU_FD, "#s00\n", 5);
+		printf("%u\n", timeOut);
+
+		if(timeOut > len){
+			write(1, ".", 1);
+			return 1;
+		}
 	}
 }
 
@@ -91,17 +97,18 @@ int smashImuInit(const char* dev, void (*onChange)(float*)){
 
 	assert((changeCallback = onChange) != NULL);
 
-	sleep(1);
+	sleep(3);
 
-	atWrite(IMU_FD, "#ob\n",  4); // Turn on binary output
-	atWrite(IMU_FD, "#o1\n",  4); // Turn on continuous streaming output
-	atWrite(IMU_FD, "#oe0\n", 5); // Disable error message output
+	do{
+	atWrite(IMU_FD, "#ob",  3); // Turn on binary output
+	atWrite(IMU_FD, "#o1",  3); // Turn on continuous streaming output
+	atWrite(IMU_FD, "#oe0", 4); // Disable error message output
 	
-	tcflush(IMU_FD, TCIFLUSH);
-	atWrite(IMU_FD, "#s00\n", 5);
+//	tcflush(IMU_FD, TCIFLUSH);
+	atWrite(IMU_FD, "#s00", 4);
 	
 	// sync 
-	smashImuSync("#SYNCH00\r\n");
+	}while(smashImuSync("#SYNCH00\r\n"));
 	synched = 1;
 
 	write(1, "Synched\n", 8);

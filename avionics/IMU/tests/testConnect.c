@@ -32,7 +32,7 @@ void onChange(float* ori){
 }
 
 int main(void){
-	smashImuInit("/dev/tty.usbserial-FTGCHM6G", onChange);
+	smashImuInit("/dev/ttyUSB0", onChange);
 	icInit();
 
 	while(1){
