@@ -6,10 +6,8 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
-#define DELAY 15000
-
 int main(void){
-	int i, j, k, fd = smashTelemetryInit("/dev/i2c-1", 0x03);
+	int i, j, fd = smashTelemetryInit("/dev/i2c-1", 0x03);
 	char buf[128] = {0};
 	
 	char type = MSG_TYPE_ROTORS;
@@ -28,15 +26,17 @@ int main(void){
 		printf("Done goofed %d\n", errno);
 	}
 	printf("Wrote %d size %d\n", i, sizeof(RotorStates));
-	usleep(DELAY);
+	//usleep(50000);
+	sleep(1);
 
-	for(k = 1000; k--;){
+	{
 		char rotorReq = 0;
 		int waiting = 0;
 		bzero(msg, sizeof(RotorStates));		
 		if(write(fd, &rotorReq, 1) != 1)
 			printf("Something went wrong\n");
-		usleep(10000);
+		//usleep(500000);
+		sleep(1);
 /*		
 		while(waiting != sizeof(RotorStates)){
 			char buf[128];
@@ -49,13 +49,11 @@ int main(void){
 			printf("%d\n", i);
 			write(1, ".", 1);
 		}
-		usleep(DELAY);
-		
-		for(j = 0; j < i; j++){
-			printf("%02x ", msg[j]);
-		}printf("\n");	
-
 	}
+
+	for(j = 0; j < i; j++){
+		printf("%02x ", msg[j]);
+	}	
 
 	smashTelemetryShutdown(fd);
 
