@@ -8,7 +8,7 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 
-//#define __IMU_DEBUG
+#define __IMU_DEBUG
 
 #define __TO_RAD(x){ x *= M_PI / 180.0; }
 
@@ -53,16 +53,27 @@ int smashImuInit(const char* dev){
 
 	sleep(1);
 
+	atWrite(IMU_FD, "#ob", 3); // Turn on binary output
+	atWrite(IMU_FD, "#o1", 3); // Turn on continuous streaming output
+	atWrite(IMU_FD, "#oe0", 4); // Disable error message output
+	
+	//tcflush(IMU_FD, TCIFLUSH);
+	atWrite(IMU_FD, "#s", 2);
+	tcflush(IMU_FD, TCIFLUSH);
+	atWrite(IMU_FD, "00", 2);
+
 	while(!synched){
-		atWrite(IMU_FD, "#ob\n",  4); // Turn on binary output
-		atWrite(IMU_FD, "#o1\n",  4); // Turn on continuous streaming output
-		atWrite(IMU_FD, "#oe0\n", 5); // Disable error message output
-		
-		tcflush(IMU_FD, TCIFLUSH);
-		atWrite(IMU_FD, "#s00\n", 5);
-		
+		write(1, ".", 1);
+		sleep(1);	
+	
 		// sync 
-		if(!smashImuSync("#SYNCH00\r\n")) continue;
+		if(!smashImuSync("#SYNCH00\r\n")){
+			write(1, ".", 1);
+			atWrite(IMU_FD, "#s", 2);
+			tcflush(IMU_FD, TCIFLUSH);
+			atWrite(IMU_FD, "00", 2);
+			continue;
+		}
 		synched = 1;
 	}
 

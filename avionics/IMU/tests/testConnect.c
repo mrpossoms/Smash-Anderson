@@ -3,6 +3,7 @@
 
 int main(void){
 	smashImuInit("/dev/ttyUSB0");
+	write(1, "!\n", 2);
 	icInit();
 
 	while(1){
