@@ -1,5 +1,6 @@
 #include "smash-telemetry.h"
 #include <stdio.h>
+#include <math.h>
 #include <unistd.h>
 #include <glib.h>
 #include <glib/gprintf.h>
@@ -24,37 +25,16 @@ int main(void){
 		if(write(fd, &msg + i, 1) <= 0)
 			printf("Done goofed %d\n", errno);
 	}*/
-	if((i = write(fd, buf, sizeof(RotorStates) + 1)) != sizeof(RotorStates) + 1){
-		printf("Done goofed %d\n", errno);
-	}
-	printf("Wrote %d size %d\n", i, sizeof(RotorStates));
-	usleep(DELAY);
 
-	for(k = 1000; k--;){
-		char rotorReq = 0;
-		int waiting = 0;
-		bzero(msg, sizeof(RotorStates));		
-		if(write(fd, &rotorReq, 1) != 1)
-			printf("Something went wrong\n");
-		usleep(10000);
-/*		
-		while(waiting != sizeof(RotorStates)){
-			char buf[128];
-			ioctl(fd, FIONREAD, &waiting);
-			sprintf(buf, "%d\n", waiting);
-			write(1, buf, strlen(buf));
-		}
-*/
-		if((i = read(fd, msg, sizeof(RotorStates))) <= 0){
-			printf("%d\n", i);
-			write(1, ".", 1);
-		}
-		usleep(DELAY);
-		
-		for(j = 0; j < i; j++){
+#define steps 1000
+	for(k = steps; k--;){
+		msg[0] = (char)(cos(k / steps.0f) * 180);
+		smashTelSendThrottles(fd, msg);
+		bzero(msg, sizeof(RotorStates));
+		smashTelRecieveThrottles(fd, msg);
+		for(j = 0; j < sizeof(RotorStates); j++){
 			printf("%02x ", msg[j]);
 		}printf("\n");	
-
 	}
 
 	smashTelemetryShutdown(fd);

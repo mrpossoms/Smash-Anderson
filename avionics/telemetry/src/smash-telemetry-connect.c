@@ -17,6 +17,8 @@ int smashTelemetryInit(const char* dev, int addr){
 		exit(1);
 	}
 
+	lseek(fd, 0, SEEK_END);
+
 	printf("%x set as slave address\n", addr);
 	if (ioctl(fd, I2C_SLAVE, addr) < 0) {
 		printf("Failed to acquire bus access and/or talk to slave.\n");

@@ -30,7 +30,7 @@ int smashImuSync(const char* token){
 
 	while(bytes < len)
 		ioctl(IMU_FD, FIONREAD, &bytes);
-	atRead(IMU_FD, &received[0], len);
+	atRead(IMU_FD, received, len);
 	return memcmp(received, token, len) == 0;
 }
 
@@ -56,7 +56,8 @@ int smashImuInit(const char* dev){
 	atWrite(IMU_FD, "#ob", 3); // Turn on binary output
 	atWrite(IMU_FD, "#o1", 3); // Turn on continuous streaming output
 	atWrite(IMU_FD, "#oe0", 4); // Disable error message output
-	
+
+	tcdrain(IMU_FD);	
 	//tcflush(IMU_FD, TCIFLUSH);
 	atWrite(IMU_FD, "#s", 2);
 	tcflush(IMU_FD, TCIFLUSH);
