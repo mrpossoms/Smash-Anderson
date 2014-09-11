@@ -13,7 +13,7 @@ void __dump(char* buf, int len){
 	int i = 0;	
 	for(i = 0; i < len; i++){
 		char str[16];
-		sprintf(str, "%02x ", buf[i]);
+		sprintf(str, "%02x ", buf[i] & 0xff);
 		write(1, str, strlen(str));
 	}write(1, "\n", 1);
 }

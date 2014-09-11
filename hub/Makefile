@@ -2,10 +2,11 @@ NAME=smash-hub
 EDITOR=
 FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
-INC=./include
+INC=./include 
 DST=./lib
 LINK=-lNEMA -lSmashTelemetry -lsmash-imu -lControls -lardutalk -lindicurses -lpthread -lm -lcurses
-LIB=lib$(NAME).a
+DEP_INC=-I./../avionics/telemetry/include
+DEP_LIB=-L./../avionics/telemetry/lib
 
 TSTINC=./tests/include
 TST=./tests
@@ -16,7 +17,7 @@ ifdef NAME
 	#gcc -I$(INC) -c $(SRC)
 	#ar rcs $(DST)/$(LIB) *.o
 	#rm *.o
-	gcc -I./../math/vector/include -L./$(DST)/ main.c -o smash-anderson $(LINK)
+	gcc $(DEP_LIB) $(DEP_INC) -L/usr/local/lib main.c -o smash-anderson $(LINK)
 else
 	@echo "Project not setup! Please run 'make setup' first."
 endif
@@ -25,8 +26,8 @@ testlib: $(SRC)
 ifdef NAME
 	gcc -I$(INC) -I$(TSTINC) -c $(SRC)
 	mkdir -p $(TST)/lib
-	ar rcs $(TST)/lib/$(LIB) *.o
-	rm *.o
+	#ar rcs $(TST)/lib/$(LIB) *.o
+	#rm *.o
 else
 	@echo "Project not setup! Please run 'make setup' first."
 endif

@@ -11,9 +11,6 @@
 #include <assert.h>
 
 //#define __IMU_DEBUG
-#define VEC3 sizeof(float) * 3
-#define VEC6 sizeof(float) * 6
-
 
 const float DEG_TO_RAD = (M_PI / 180.0f);
 
