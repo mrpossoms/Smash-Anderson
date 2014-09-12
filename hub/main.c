@@ -25,18 +25,8 @@ void printGpsCoords(GpsState* state){
 	icText(2, 4, buf);
 }
 
-void orientationChanged(float* oriOmega){
-	printf("theta(%f, %f, %f) omega(%f, %f, %f)\n", oriOmega[0], oriOmega[1], oriOmega[2], oriOmega[3], oriOmega[4], oriOmega[5]);
-}
-
 int main(int argc, const char* argv[]){
-	int fd_gps    = -1; //lnConnect(GPS_DEV, B57600);
-	int fd_rotors = -1;
-	int fd_radio  = -1;
 
-	char gps_buf[255] = {0};	
-	GpsState gps_st = {0};
-	RotorStates rotor_st = {0};
 
 	// start servo driver and check the status
 	printf("Preparing servo driver...");
@@ -49,20 +39,6 @@ int main(int argc, const char* argv[]){
 		}
 	}
 	printf("OK!\n");
-
-	if(argc > 1){
-		//smashImuInit(IMU_DEV, orientationChanged);
-		//fd_gps    = lnConnect(GPS_DEV, B57600);
-		//fd_rotors = smashSpeedInit(ROTORS_DEV);	
-		fd_radio  = smashTelemetryInit(argv[1]);
-		printf("Running\n");
-	}
-	else{
-		smashImuInit(IMU_DEV, orientationChanged);
-		//fd_gps    = lnConnect(GPS_DEV, B57600);
-		fd_rotors = smashSpeedInit(ROTORS_DEV);	
-		fd_radio  = smashTelemetryInit(RADIO_DEV);		
-	}
 
 	while(1){
 		int msgType = 0;
