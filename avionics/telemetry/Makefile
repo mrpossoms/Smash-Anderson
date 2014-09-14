@@ -1,6 +1,6 @@
 FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
-INC=./include
+INC=-I./include -I./../../hub/include
 DST=./lib
 LINK=-string -lardutalk
 LIB=libSmashTelemetry.a
@@ -10,7 +10,7 @@ TST=./tests
 TSTS=./tests/*.c
 
 all:
-	gcc -I$(INC) -c $(SRC)
+	gcc $(INC) -c $(SRC)
 		ar rcs $(DST)/$(LIB) *.o
 			rm *.o
 
