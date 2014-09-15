@@ -45,7 +45,7 @@ void smashTelemetryShutdown(int fd){
 	close(fd);
 }
 //-----------------------------------------------------------------------
-int smashTelSendStatus(int fd, SmashStatusMsg* status){
+int smashSendStatus(int fd, struct SmashState* status){
 	int result = 0;
 	int statusCode = MSG_CODE_STATUS;
 
@@ -55,7 +55,7 @@ int smashTelSendStatus(int fd, SmashStatusMsg* status){
 	}
 
 	// send the status message itself
-	if((result = __send(fd, status, sizeof(SmashStatusMsg)))){
+	if((result = __send(fd, status, sizeof(struct SmashState)))){
 		return result;
 	}
 
@@ -82,7 +82,7 @@ int smashReceiveMsg (int fd, void* msg){
 			result = __receieve(fd, msg, sizeof(RotorStates));
 			break;
 		case MSG_CODE_STATUS:
-			result = __receieve(fd, msg, sizeof(SmashStatusMsg));
+			result = __receieve(fd, msg, sizeof(struct SmashState));
 			break;
 	}
 
@@ -103,7 +103,7 @@ int smashSendMessage(int fd, int type, void* msg){
 			result = __send(fd, msg, sizeof(RotorStates));
 			break;
 		case MSG_CODE_STATUS:
-			result = __send(fd, msg, sizeof(SmashStatusMsg));
+			result = __send(fd, msg, sizeof(struct SmashState));
 			break;	
 	}
 
