@@ -3,18 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
+
 #include <indicurses.h>
 #include <libNEMA.h>
 #include <ardutalk.h>
 #include <Controls.h>
 #include <smash-telemetry.h>
-#include <assert.h>
-#include "smash-hub.h"
 
-#define GPS_DEV   "/dev/ttyAMA0"
-//#define IMU_DEV   "/dev/ttyUSB0"
-#define RADIO_DEV "/dev/ttyUSB1"
-#define ROTORS_DEV "/dev/servoblaster"
+#include "smash-hub.h"
 
 static float YPR[3];
 static struct SmashState* state = NULL;
@@ -30,8 +27,14 @@ void printGpsCoords(GpsState* state){
 }
 
 int main(int argc, const char* argv[]){
-	int fd_radio = smashTelemetryInit(RADIO_DEV);
+	int fd_radio = 0;
 
+	if(argc != 2){
+		printf("Missing radio device path parameter\n");
+		return -1;
+	}
+
+	fd_radio = smashTelemetryInit(argv[1]);
 	assert(!icInit());
 
 	// start servo driver and check the status
@@ -77,6 +80,11 @@ int main(int argc, const char* argv[]){
 							unsigned char t = 0;//rotor_st[0];
 							printf("Rotors = {%d, %d, %d, %d}\n", (int)t, (int)t, (int)t, (int)t); 
 						}
+					}
+					break;
+				case MSG_CODE_STATUS:
+					{
+						smashSendStatus(fd_radio, state);
 					}
 					break;
 				default:;
