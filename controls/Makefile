@@ -2,18 +2,21 @@ NAME=Controls
 EDITOR=vim
 FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
-INC=./include
+INC=-I./include -I./../hub/include
 DST=./lib
-LINK=-string -lm
+LINK=-lm
 LIB=lib$(NAME).a
 
 TSTINC=./tests/include
 TST=./tests
 TSTS=./tests/*.c
 
+worker:
+	gcc $(INC) $(SRC) main.c -o smash-speed $(LINK)
+
 all:
 ifdef NAME
-	gcc -I$(INC) -c $(SRC)
+	gcc $(INC) -c $(SRC)
 	ar rcs $(DST)/$(LIB) *.o
 	rm *.o
 else

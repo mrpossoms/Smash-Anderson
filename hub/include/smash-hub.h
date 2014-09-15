@@ -1,7 +1,11 @@
 #ifndef __smash-hub_smash-hub 
 #define __smash-hub_smash-hub
 
+#include <unistd.h>
 #include <libNEMA.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 #define SMASH_HUB_MSK_IMU   0x01
 #define SMASH_HUB_MSK_TELEM 0x02

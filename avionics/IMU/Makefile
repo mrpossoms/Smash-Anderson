@@ -2,7 +2,7 @@ CC=gcc
 INC=-I./include -I./../../hub/include
 INC_VEC=./../../math/vector/include
 SRC=./src/*.c
-LINK=-lardutalk
+LINK=-lardutalk -lpthread
 
 all:
 	$(CC) $(INC) -c $(SRC)/smash-imu-decoder.c -o smash-imu-decoder

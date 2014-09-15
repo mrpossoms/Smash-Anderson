@@ -11,8 +11,9 @@
 struct SmashState* state = NULL;
 
 void onChange(float* ori){
-	memcpy(ori, state->imuAngles, sizeof(float) * 3);
-	memcpy(ori + 3, state->imuOmegas, sizeof(float) * 3);
+	
+	memcpy(state->imuAngles, ori, sizeof(float) * 3);
+	memcpy(state->imuOmegas, ori + 3, sizeof(float) * 3);
 }
 
 int main(int argc, char* argv[])
