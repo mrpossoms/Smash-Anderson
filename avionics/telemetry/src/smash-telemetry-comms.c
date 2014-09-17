@@ -30,7 +30,8 @@ int __send(int fd, void* msg, size_t size){
 //-----------------------------------------------------------------------
 int __receieve(int fd, void* msg, size_t size){
 	// read the response message
-	if(atRead(fd, msg, size) < size){
+	int read = atRead(fd, msg, size);
+	if(read < 0 || read < size){
 		// ERROR
 		lseek(fd, 0, SEEK_END);
 		return -2;
@@ -63,11 +64,10 @@ int smashSendStatus(int fd, struct SmashState* status){
 }
 //-----------------------------------------------------------------------
 int smashReceiveCode(int fd, byte* type){
+	atPrepare(fd, sizeof(byte));
 	if(__receieve(fd, type, sizeof(byte))){
 		return -1;
 	}
-
-	__dump(type, sizeof(byte));	
 
 	__msgCode = *type;
 	__readyForMsg = 1;

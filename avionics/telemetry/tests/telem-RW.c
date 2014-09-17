@@ -8,7 +8,7 @@
 #define DELAY 15000
 
 int main(void){
-	int i, fd = smashTelemetryInit("/dev/ttyUSB0");
+	int i, fd = smashTelemetryInit("/dev/tty.usbserial-A5025TWM");
 	
 	printf("fd: %d\n", fd);
 	//if(write(fd, &type, 1) > 0)

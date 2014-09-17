@@ -2,6 +2,7 @@
 #define __smash_hub_smash_hub
 
 #include <unistd.h>
+#include <stdio.h>
 #include <libNEMA.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
