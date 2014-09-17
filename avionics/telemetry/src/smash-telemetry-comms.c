@@ -6,8 +6,8 @@
 
 #define DELAY 18000
 
-int __readyForMsg = 0;
-int __msgCode;
+int  __readyForMsg = 0;
+byte __msgCode;
 
 void __dump(char* buf, int len){
 	int i = 0;	
@@ -35,7 +35,7 @@ int __receieve(int fd, void* msg, size_t size){
 		lseek(fd, 0, SEEK_END);
 		return -2;
 	}
-
+	
 	usleep(DELAY);
 	
 	return 0;
@@ -62,10 +62,12 @@ int smashSendStatus(int fd, struct SmashState* status){
 	return 0;
 }
 //-----------------------------------------------------------------------
-int smashReceiveCode(int fd, int* type){
-	if(__receieve(fd, type, sizeof(int))){
+int smashReceiveCode(int fd, byte* type){
+	if(__receieve(fd, type, sizeof(byte))){
 		return -1;
 	}
+
+	__dump(type, sizeof(byte));	
 
 	__msgCode = *type;
 	__readyForMsg = 1;

@@ -17,7 +17,7 @@ void smashTelemetryShutdown(int fd);
 
 int smashSendStatus(int fd, struct SmashState* status);
 
-int smashReceiveCode(int fd, int* type);
+int smashReceiveCode(int fd, byte* type);
 int smashReceiveMsg (int fd, void* msg);
 
 int smashSendMessage(int fd, int type, void* msg);

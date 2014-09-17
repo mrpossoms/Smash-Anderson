@@ -1,5 +1,5 @@
-#ifndef __smash-hub_smash-hub 
-#define __smash-hub_smash-hub
+#ifndef __smash_hub_smash_hub 
+#define __smash_hub_smash_hub
 
 #include <unistd.h>
 #include <libNEMA.h>
@@ -31,12 +31,12 @@ static inline void* createAndAttach(key_t key)
 
 	if ((shmid = shmget(key, sizeof(struct SmashState), IPC_CREAT | 0666)) < 0) {
 		perror("shmget");
-		exit(1);
+		return NULL;
 	}
 
 	if ((data = shmat(shmid, NULL, 0)) == (void *) -1) {
         perror("shmat");
-        exit(1);
+        return NULL;
     }
 
     return data;

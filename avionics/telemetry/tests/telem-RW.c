@@ -18,11 +18,13 @@ int main(void){
 	}*/
 
 	while(1){
-		int msgType = -1;
+		byte msgType = 0;
 		if(smashReceiveCode(fd, &msgType)){
-			printf("Got code of type %x\n", msgType);
+			usleep(DELAY);
+			continue;
 		}
-		usleep(DELAY);
+
+		printf("Got code of type %x\n", msgType);		
 	}
 
 #define steps 1000

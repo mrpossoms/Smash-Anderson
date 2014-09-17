@@ -35,7 +35,7 @@ int main(int argc, const char* argv[]){
 	}
 
 	fd_radio = smashTelemetryInit(argv[1]);
-	assert(!icInit());
+	//assert(!icInit());
 
 	// start servo driver and check the status
 	printf("Preparing servo driver...");
@@ -62,12 +62,13 @@ int main(int argc, const char* argv[]){
 		int msgType = 0;
 		char buf[128] = {0};
 
-		clear();
+		//clear();
 
 		sprintf(buf, "ypr = ( %f, %f, %f )", state->imuAngles[0], state->imuAngles[1], state->imuAngles[2]);
-		icText(2, 2, buf);
+		//icText(2, 2, buf);
 
 		if(!smashReceiveCode(fd_radio, &msgType)){
+			//if(msgType == 0) continue;
 			//printf("Message type %d\n", msgType);
 
 			switch(msgType){
@@ -77,18 +78,24 @@ int main(int argc, const char* argv[]){
 						if(!smashReceiveMsg(fd_radio, &temp)){
 							//memcpy(&rotor_st, &temp, sizeof(RotorStates));
 
-							unsigned char t = 0;//rotor_st[0];
-							printf("Rotors = {%d, %d, %d, %d}\n", (int)t, (int)t, (int)t, (int)t); 
+							printf("Rotors = {%d, %d, %d, %d}\n",
+								(int)temp[0],
+								(int)temp[1],
+								(int)temp[2],
+								(int)temp[3]
+							); 
+							//icText(3,3,"*************");
 						}
 					}
 					break;
 				case MSG_CODE_STATUS:
 					{
+						//icText(2,3,"*************");
 						smashSendStatus(fd_radio, state);
 					}
 					break;
 				default:;
-					//printf("Unrecognized message!\n");
+					printf("Unrecognized message!\n");
 			}
 		} 	
 
@@ -103,7 +110,7 @@ int main(int argc, const char* argv[]){
 
 	
 		usleep(10000);	
-		icPresent();
+		//icPresent();
 	}
 	
 	printf("Done\n");
