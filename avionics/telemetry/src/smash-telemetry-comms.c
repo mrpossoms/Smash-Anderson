@@ -19,27 +19,28 @@ void __dump(char* buf, int len){
 }
 
 int __send(int fd, void* msg, size_t size){
-	if(atWrite(fd, msg, size) != size){
+	int wrote = atWrite(fd, msg, size);
+
+	//printf("wrote %d\n", wrote);
+	if(wrote != size){
 		// ERROR
 	}
 	
 	usleep(DELAY);
 
-	return 0;
+	return wrote;
 }
 //-----------------------------------------------------------------------
 int __receieve(int fd, void* msg, size_t size){
 	// read the response message
+	if(atAvailable(fd) < size)
+		return -1;
+
 	int read = atRead(fd, msg, size);
-	if(read < 0 || read < size){
-		// ERROR
-		lseek(fd, 0, SEEK_END);
-		return -2;
-	}
 	
 	usleep(DELAY);
 	
-	return 0;
+	return read;
 }
 //-----------------------------------------------------------------------
 void smashTelemetryShutdown(int fd){
@@ -48,24 +49,33 @@ void smashTelemetryShutdown(int fd){
 //-----------------------------------------------------------------------
 int smashSendStatus(int fd, struct SmashState* status){
 	int result = 0;
-	int statusCode = MSG_CODE_STATUS;
+	byte statusCode = MSG_CODE_STATUS;
 
 	// inform the receiver of the message type
-	if((result = __send(fd, &statusCode, sizeof(int)))){
+	if((result = __send(fd, &statusCode, sizeof(byte)))){
+		__readyForMsg = 0;
+		//printf("Code error\n");
 		return result;
 	}
 
 	// send the status message itself
 	if((result = __send(fd, status, sizeof(struct SmashState)))){
+		__readyForMsg = 0;
+		//printf("Msg error\n");
 		return result;
 	}
+
+	__readyForMsg = 0;
 
 	return 0;
 }
 //-----------------------------------------------------------------------
 int smashReceiveCode(int fd, byte* type){
+	//printf("rfm %d ", __readyForMsg);
+	if(__readyForMsg) return 0;
+
 	atPrepare(fd, sizeof(byte));
-	if(__receieve(fd, type, sizeof(byte))){
+	if(__receieve(fd, type, sizeof(byte)) <= 0){
 		return -1;
 	}
 
@@ -81,12 +91,16 @@ int smashReceiveMsg (int fd, void* msg){
 
 	switch(__msgCode){
 		case MSG_CODE_THROTTLE:
+			atPrepare(fd, sizeof(RotorStates));
 			result = __receieve(fd, msg, sizeof(RotorStates));
 			break;
 		case MSG_CODE_STATUS:
+			atPrepare(fd, sizeof(struct SmashState));
 			result = __receieve(fd, msg, sizeof(struct SmashState));
 			break;
 	}
+
+	if(result <= 0) return -2;
 
 	__readyForMsg = 0;
 

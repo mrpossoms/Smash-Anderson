@@ -3,8 +3,8 @@
 
 #include "smash-hub.h"
 
-#define MSG_CODE_THROTTLE 0x01
-#define	MSG_CODE_STATUS   0x02
+#define MSG_CODE_THROTTLE 0x61
+#define	MSG_CODE_STATUS   0x67
 
 typedef unsigned char byte;
 
