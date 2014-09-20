@@ -47,6 +47,20 @@ void smashTelemetryShutdown(int fd){
 	close(fd);
 }
 //-----------------------------------------------------------------------
+int smashRequestStatus(int fd){
+	int result = 0;
+	byte statusCode = MSG_CODE_STATUS;
+
+	// inform the receiver of the message type
+	if((result = __send(fd, &statusCode, sizeof(byte)))){
+		__msgCode = MSG_CODE_STATUS;
+		__readyForMsg = 1;
+		//printf("Code error\n");
+		return result;
+	}
+	return 0;
+}
+//-----------------------------------------------------------------------
 int smashSendStatus(int fd, struct SmashState* status){
 	int result = 0;
 	byte statusCode = MSG_CODE_STATUS;
@@ -98,6 +112,9 @@ int smashReceiveMsg (int fd, void* msg){
 			atPrepare(fd, sizeof(struct SmashState));
 			result = __receieve(fd, msg, sizeof(struct SmashState));
 			break;
+		case MSG_CODE_DATA:
+			atPrepare(fd, sizeof(struct SmashData));
+			result = __receieve(fd, msg, sizeof(struct SmashData));
 	}
 
 	if(result <= 0) return -2;

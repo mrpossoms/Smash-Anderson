@@ -4,8 +4,9 @@
 #include <smash-telemetry.h>
 #include "controls.h"
 
-GLFWwindow* window = NULL;
-int radio_fd;
+static GLFWwindow* window = NULL;
+static int radio_fd;
+static unsigned char statusTimer;
 
 static void updateView(){
 	float ratio;
@@ -71,6 +72,10 @@ int main(int argc, char* argv[]){
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		controlsPoll();
+
+		if(!(statusTimer--)){
+			smashRequestStatus(radio_fd);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

@@ -2,10 +2,13 @@ NAME=BaseStation
 EDITOR=
 FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
-INC=./include  -I /Library/Frameworks/SDL2.framework/Headers
+INC=-I./include  -I /Library/Frameworks/SDL2.framework/Headers
 DST=./lib
-LINK= -lardutalk -lSmashTelemetry -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
+LINK= -lardutalk -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
 LIB=lib$(NAME).a
+DEP_SRC=./../avionics/telemetry/src/*.c
+DEP_INC=-I./../avionics/telemetry/include -I./../hub/include
+DEP_LIB=-L./../avionics/telemetry/lib
 
 TSTINC=./tests/include
 TST=./tests
@@ -13,7 +16,7 @@ TSTS=./tests/*.c
 
 all:
 ifdef NAME
-	gcc -I$(INC) $(SRC) main.c $(LINK)
+	gcc $(DEP_INC) $(INC) $(DEP_LIB) $(DEP_SRC) $(SRC) main.c $(LINK)
 	rm *.o
 else
 	@echo "Project not setup! Please run 'make setup' first."

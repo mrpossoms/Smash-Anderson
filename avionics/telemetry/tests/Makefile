@@ -8,6 +8,7 @@ LINK= -lm -lardutalk
 
 all:
 	find ./ -iname "*.c" -exec gcc $(INC) $(DEP_SRC) {} $(LIB) $(LINK) -o {}.bin \;
+
 install:
 	echo -n "Installing the library"
 	cp $(DST)/include/*.h /usr/include
