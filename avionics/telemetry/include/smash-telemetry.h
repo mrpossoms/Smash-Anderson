@@ -2,6 +2,7 @@
 #define SMASH_TELEM
 
 #include "smash-hub.h"
+#include <ardutalk.h>
 
 #define MSG_CODE_THROTTLE 0x61
 #define	MSG_CODE_STATUS   0x67
@@ -15,7 +16,7 @@ typedef float LocationStates[3];
 
 struct SmashData{
 	unsigned char len;
-	byte buf[256];
+	byte buf[128];
 };
 
 int  smashTelemetryInit(const char* dev);
@@ -27,6 +28,6 @@ int smashSendStatus(int fd, struct SmashState* status);
 int smashReceiveCode(int fd, byte* type);
 int smashReceiveMsg (int fd, void* msg);
 
-int smashSendMessage(int fd, int type, void* msg);
+int smashSendMsg(int fd, byte type, void* msg);
 
 #endif

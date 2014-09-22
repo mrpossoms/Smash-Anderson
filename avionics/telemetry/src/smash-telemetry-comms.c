@@ -21,7 +21,6 @@ void __dump(char* buf, int len){
 int __send(int fd, void* msg, size_t size){
 	int wrote = atWrite(fd, msg, size);
 
-	//printf("wrote %d\n", wrote);
 	if(wrote != size){
 		// ERROR
 	}
@@ -99,7 +98,7 @@ int smashReceiveCode(int fd, byte* type){
 	return 0;
 }
 //-----------------------------------------------------------------------
-int smashReceiveMsg (int fd, void* msg){
+int smashReceiveMsg(int fd, void* msg){
 	int result = 0;
 	if(!__readyForMsg) return -1;
 
@@ -124,10 +123,11 @@ int smashReceiveMsg (int fd, void* msg){
 	return result;
 }
 //-----------------------------------------------------------------------
-int smashSendMessage(int fd, int type, void* msg){
+int smashSendMsg(int fd, byte type, void* msg){
 	int result = 0;
 
-	if(__send(fd, &type, sizeof(int))){
+	if(__send(fd, &type, sizeof(byte)) <= 0){
+		printf("Failed to send msg code\n");
 		return -1;
 	}
 
@@ -137,7 +137,9 @@ int smashSendMessage(int fd, int type, void* msg){
 			break;
 		case MSG_CODE_STATUS:
 			result = __send(fd, msg, sizeof(struct SmashState));
-			break;	
+			break;
+		case MSG_CODE_DATA:
+			result = __send(fd, msg, sizeof(struct SmashData));
 	}
 
 	return result;
