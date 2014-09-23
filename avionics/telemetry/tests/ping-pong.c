@@ -38,29 +38,15 @@ int main(int argc, char* argv[])
         printf(fd_file ? "Writing\n" : "Reading\n");
         while(1){
                 if(!fd_file){
-                        int res = atRead(fd_radio, &msgType, sizeof(byte));
-                        // write(1, &msgType, sizeof(byte));
-                        //if(smashReceiveCode(fd_radio, &msgType)){
-                        if(res){
-                                //printf("+ %c\n", msgType);
-                                switch(msgType){
-                                        case MSG_CODE_DATA:
-                                        {
-                                                int r2 = atRead(fd_radio, &packet, sizeof(struct SmashData));
-                                                //printf("(%d) Data len = %d\n", r2, packet.len);
-                                                //write(1, packet.buf, packet.len);
-                                                write(fd_out, packet.buf, packet.len);
+                        msgType = MSG_CODE_DATA;
+                        smashReceiveMsg(fd_radio, &msgType, &packet);
+                        write(fd_out, packet.buf, packet.len);
+                        write(1, "+", 1);
 
-                                                if(packet.len < 128){
-                                                        printf("DONE!\n");
-                                                        close(fd_out);
-                                                }
-                                        }
-                                                break;
-                                        default:
-                                                break;
-                                }
-                        }
+                        if(packet.len < 128){
+                                printf("DONE!\n");
+                                close(fd_out);
+                        } 
                 }
                 else{
                         struct SmashData data;
@@ -70,13 +56,9 @@ int main(int argc, char* argv[])
                         if(data.len){
                                 msgType = MSG_CODE_DATA;
                                 smashSendMsg(fd_radio, msgType, &data);
-                                //printf(" [LEN:%u]\n", data.len);
-                                //printf(" Wrote %d\n", smashSendMsg(fd_radio, msgType, &data));
+                                write(1, ".", 1);
                         }
                 }
-                //printf(".");
-                usleep(DELAY);
-                //sleep(1);
         }
  
         return 0;

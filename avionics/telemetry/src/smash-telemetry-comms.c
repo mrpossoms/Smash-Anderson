@@ -6,9 +6,6 @@
 
 #define DELAY 18000
 
-int  __readyForMsg = 0;
-byte __msgCode;
-
 void __dump(char* buf, int len){
 	int i = 0;	
 	for(i = 0; i < len; i++){
@@ -17,130 +14,92 @@ void __dump(char* buf, int len){
 		write(1, str, strlen(str));
 	}write(1, "\n", 1);
 }
-
-int __send(int fd, void* msg, size_t size){
-	int wrote = atWrite(fd, msg, size);
-
-	if(wrote != size){
-		// ERROR
-	}
-	
-	usleep(DELAY);
-
-	return wrote;
-}
-//-----------------------------------------------------------------------
-int __receieve(int fd, void* msg, size_t size){
-	// read the response message
-	if(atAvailable(fd) < size)
-		return -1;
-
-	int read = atRead(fd, msg, size);
-	
-	usleep(DELAY);
-	
-	return read;
-}
 //-----------------------------------------------------------------------
 void smashTelemetryShutdown(int fd){
 	close(fd);
 }
 //-----------------------------------------------------------------------
-int smashRequestStatus(int fd){
-	int result = 0;
-	byte statusCode = MSG_CODE_STATUS;
+int smashReceiveMsg(int fd, byte* type, void* msg){
+	size_t msgSize = 0;
+	byte   msgType = *type;
 
-	// inform the receiver of the message type
-	if((result = __send(fd, &statusCode, sizeof(byte)))){
-		__msgCode = MSG_CODE_STATUS;
-		__readyForMsg = 1;
-		//printf("Code error\n");
-		return result;
-	}
-	return 0;
-}
-//-----------------------------------------------------------------------
-int smashSendStatus(int fd, struct SmashState* status){
-	int result = 0;
-	byte statusCode = MSG_CODE_STATUS;
+	// wait for the peer to indicate what message is incomming
+	int result = atRead(fd, type, sizeof(byte));
 
-	// inform the receiver of the message type
-	if((result = __send(fd, &statusCode, sizeof(byte)))){
-		__readyForMsg = 0;
-		//printf("Code error\n");
-		return result;
-	}
-
-	// send the status message itself
-	if((result = __send(fd, status, sizeof(struct SmashState)))){
-		__readyForMsg = 0;
-		//printf("Msg error\n");
-		return result;
-	}
-
-	__readyForMsg = 0;
-
-	return 0;
-}
-//-----------------------------------------------------------------------
-int smashReceiveCode(int fd, byte* type){
-	//printf("rfm %d ", __readyForMsg);
-	if(__readyForMsg) return 0;
-
-	atPrepare(fd, sizeof(byte));
-	if(__receieve(fd, type, sizeof(byte)) <= 0){
-		return -1;
-	}
-
-	__msgCode = *type;
-	__readyForMsg = 1;
-
-	return 0;
-}
-//-----------------------------------------------------------------------
-int smashReceiveMsg(int fd, void* msg){
-	int result = 0;
-	if(!__readyForMsg) return -1;
-
-	switch(__msgCode){
+	switch((int)msgType){
 		case MSG_CODE_THROTTLE:
-			atPrepare(fd, sizeof(RotorStates));
-			result = __receieve(fd, msg, sizeof(RotorStates));
+			msgSize = sizeof(RotorStates);
 			break;
 		case MSG_CODE_STATUS:
-			atPrepare(fd, sizeof(struct SmashState));
-			result = __receieve(fd, msg, sizeof(struct SmashState));
+			msgSize = sizeof(struct SmashState);
 			break;
 		case MSG_CODE_DATA:
-			atPrepare(fd, sizeof(struct SmashData));
-			result = __receieve(fd, msg, sizeof(struct SmashData));
+			msgSize = sizeof(struct SmashData);
+			break;
+		default:
+			if(result > 0){
+				return TELEM_ERR_BAD_CODE;
+			}
+			else{
+				return TELEM_ERR_BAD_CODE & TELEM_ERR_TIMEOUT;
+			}
 	}
 
-	if(result <= 0) return -2;
+	// read the expected message
+	result = atRead(fd, msg, msgSize);
 
-	__readyForMsg = 0;
+	// check the message size
+	if(result != msgSize){
+		return TELEM_ERR_BAD_MSG & TELEM_ERR_TIMEOUT;
+	}
+
+	// everything is ok to this point, ack the message
+	msgType |= MSG_CODE_ACK;
+	atWrite(fd, &msgType, sizeof(byte));
 
 	return result;
 }
 //-----------------------------------------------------------------------
 int smashSendMsg(int fd, byte type, void* msg){
-	int result = 0;
+	int    result  = 0;
+	byte   msgType = type;
+	byte   ackType = 0;
+	size_t msgSize = 0;
 
-	if(__send(fd, &type, sizeof(byte)) <= 0){
-		printf("Failed to send msg code\n");
-		return -1;
-	}
+	// tell the peer what kind of message is on it's way
+	result = atWrite(fd, &msgType, sizeof(byte));	
 
-	switch(type){
+	switch(msgType){
 		case MSG_CODE_THROTTLE:
-			result = __send(fd, msg, sizeof(RotorStates));
+			msgSize = sizeof(RotorStates);
 			break;
 		case MSG_CODE_STATUS:
-			result = __send(fd, msg, sizeof(struct SmashState));
+			msgSize = sizeof(struct SmashState);
 			break;
 		case MSG_CODE_DATA:
-			result = __send(fd, msg, sizeof(struct SmashData));
+			msgSize = sizeof(struct SmashData);
+			break;
+		default:
+			if(result > 0){
+				return TELEM_ERR_BAD_CODE;
+			}
+			else{
+				return TELEM_ERR_BAD_CODE & TELEM_ERR_TIMEOUT;
+			}
 	}
 
-	return result;
+	// send the message
+	atWrite(fd, msg, msgSize);
+
+	// read an ack from the peer
+	result = atRead(fd, &ackType, sizeof(byte));
+
+	// ensure the ack recieved was for the expected message
+	// and confirm that it was indeed an ack
+	if(msgType & ackType && ackType & MSG_CODE_ACK){
+		return result;
+	}
+	else
+
+	return TELEM_ERR_MSG_NACK;
 }

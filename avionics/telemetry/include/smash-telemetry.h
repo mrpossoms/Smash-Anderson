@@ -4,9 +4,16 @@
 #include "smash-hub.h"
 #include <ardutalk.h>
 
-#define MSG_CODE_THROTTLE 0x61
-#define	MSG_CODE_STATUS   0x67
-#define MSG_CODE_DATA     0x7A
+// message codes, LSb is 0. Reserved as ACK flag
+#define MSG_CODE_THROTTLE 0xC2
+#define	MSG_CODE_STATUS   0xCE
+#define MSG_CODE_DATA     0xF4
+#define MSG_CODE_ACK      0x01
+
+#define TELEM_ERR_BAD_CODE 0xFFFFFFE
+#define TELEM_ERR_TIMEOUT  0xFFFFFFD
+#define TELEM_ERR_BAD_MSG  0xFFFFFFB
+#define TELEM_ERR_MSG_NACK 0xFFFFFF7
 
 typedef unsigned char byte;
 
@@ -22,12 +29,7 @@ struct SmashData{
 int  smashTelemetryInit(const char* dev);
 void smashTelemetryShutdown(int fd);
 
-int smashRequestStatus(int fd);
-int smashSendStatus(int fd, struct SmashState* status);
-
-int smashReceiveCode(int fd, byte* type);
-int smashReceiveMsg (int fd, void* msg);
-
+int smashReceiveMsg (int fd, byte* type, void* msg);
 int smashSendMsg(int fd, byte type, void* msg);
 
 #endif

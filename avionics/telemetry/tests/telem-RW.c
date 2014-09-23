@@ -29,33 +29,33 @@ int main(void){
 			printf("Done goofed %d\n", errno);
 	}*/
 
-	while(1){
-		byte msgType = 0;
-		byte buf[128] = {0};
-		if(smashReceiveCode(fd, &msgType) < 0){
-			usleep(DELAY);
-			continue;
-		}
+	// while(1){
+	// 	byte msgType = 0;
+	// 	byte buf[128] = {0};
+	// 	if(smashReceiveCode(fd, &msgType) < 0){
+	// 		usleep(DELAY);
+	// 		continue;
+	// 	}
 
-		switch(msgType){
-			case MSG_CODE_STATUS:
-			{
-				printf("Status requested\n");
-				smashSendStatus(fd, &state);
-			}
-				break;
-			default:
-			{
-				int read = smashReceiveMsg(fd, buf);
-				if(read > 0){
-					dump(buf, read);
-				}
-			}
-				break;
-		}
+	// 	switch(msgType){
+	// 		case MSG_CODE_STATUS:
+	// 		{
+	// 			printf("Status requested\n");
+	// 			smashSendStatus(fd, &state);
+	// 		}
+	// 			break;
+	// 		default:
+	// 		{
+	// 			int read = smashReceiveMsg(fd, buf);
+	// 			if(read > 0){
+	// 				dump(buf, read);
+	// 			}
+	// 		}
+	// 			break;
+	// 	}
 	
-		usleep(DELAY);
-	}
+	// 	usleep(DELAY);
+	// }
 
 #define steps 1000
 
