@@ -39,14 +39,19 @@ int main(int argc, char* argv[])
         while(1){
                 if(!fd_file){
                         msgType = MSG_CODE_DATA;
-                        smashReceiveMsg(fd_radio, &msgType, &packet);
-                        write(fd_out, packet.buf, packet.len);
-                        write(1, "+", 1);
+                        int res = smashReceiveMsg(fd_radio, &msgType, &packet);
+                        
+			if(res > 0){
+				write(fd_out, packet.buf, packet.len);
+				printf("res %d\n", res);
 
-                        if(packet.len < 128){
-                                printf("DONE!\n");
-                                close(fd_out);
-                        } 
+				if(packet.len < 128){
+					printf("DONE!\n");
+					close(fd_out);
+				}
+			}
+			else
+				printf("err %d\n", res);
                 }
                 else{
                         struct SmashData data;
