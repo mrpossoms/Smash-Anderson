@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <GLFW/glfw3.h>
 #include <smash-telemetry.h>
+#include <ardutalk.h>
 #include "controls.h"
 
 static GLFWwindow* window = NULL;
@@ -30,7 +31,7 @@ static void throttle_callback(float x, float y){
 		t, t, t, t
 	};
 	printf("Sending message to %d %f %f %d\n", radio_fd, x, y, throttle[0]);
-	smashSendMessage(radio_fd, MSG_CODE_THROTTLE, &throttle);
+	smashSendMsg(radio_fd, MSG_CODE_THROTTLE, &throttle);
 }
 
 int main(int argc, char* argv[]){
@@ -68,13 +69,20 @@ int main(int argc, char* argv[]){
 	printf("Stick selected!\n");
 
 	while(!glfwWindowShouldClose(window)){
+		byte msgBuf[128];
+
 		updateView();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+		if(atAvailable(radio_fd)){
+			byte msgType = 0;
+			smashReceiveMsg(radio_fd, &msgType, msgBuf);
+		}
 
 		controlsPoll();
 
 		if(!(statusTimer--)){
-			smashRequestStatus(radio_fd);
+			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
 		}
 
 		glfwSwapBuffers(window);

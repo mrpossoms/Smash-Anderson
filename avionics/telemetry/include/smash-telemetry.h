@@ -5,10 +5,11 @@
 #include <ardutalk.h>
 
 // message codes, LSb is 0. Reserved as ACK flag
-#define MSG_CODE_THROTTLE 0xC2
-#define	MSG_CODE_STATUS   0xCE
-#define MSG_CODE_DATA     0xF4
-#define MSG_CODE_ACK      0x01
+#define MSG_CODE_THROTTLE   0xC2
+#define	MSG_CODE_STATUS     0xCE
+#define MSG_CODE_STATUS_REQ 0xCA
+#define MSG_CODE_DATA       0xF4
+#define MSG_CODE_ACK        0x01
 
 #define TELEM_ERR_BAD_CODE 0xFFFFFFFE
 #define TELEM_ERR_TIMEOUT  0xFFFFFFFD

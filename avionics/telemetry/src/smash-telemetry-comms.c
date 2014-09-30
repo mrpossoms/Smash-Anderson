@@ -33,6 +33,8 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 		case MSG_CODE_STATUS:
 			msgSize = sizeof(struct SmashState);
 			break;
+		case MSG_CODE_STATUS_REQ:
+			msgSize = 0;
 		case MSG_CODE_DATA:
 			msgSize = sizeof(struct SmashData);
 			break;
@@ -45,12 +47,14 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 			}
 	}
 
-	// read the expected message
-	result = atRead(fd, msg, msgSize);
+	if(msgSize){
+		// read the expected message
+		result = atRead(fd, msg, msgSize);
 
-	// check the message size
-	if(result != msgSize){
-		return TELEM_ERR_BAD_MSG & TELEM_ERR_TIMEOUT;
+		// check the message size
+		if(result != msgSize){
+			return TELEM_ERR_BAD_MSG & TELEM_ERR_TIMEOUT;
+		}
 	}
 
 	// everything is ok to this point, ack the message
@@ -76,6 +80,8 @@ int smashSendMsg(int fd, byte type, void* msg){
 		case MSG_CODE_STATUS:
 			msgSize = sizeof(struct SmashState);
 			break;
+		case MSG_CODE_STATUS_REQ:
+			msgSize = 0;
 		case MSG_CODE_DATA:
 			msgSize = sizeof(struct SmashData);
 			break;
@@ -88,8 +94,10 @@ int smashSendMsg(int fd, byte type, void* msg){
 			}
 	}
 
-	// send the message
-	atWrite(fd, msg, msgSize);
+	if(msgSize){
+		// send the message
+		atWrite(fd, msg, msgSize);
+	}
 
 	// read an ack from the peer
 	result = atRead(fd, &ackType, sizeof(byte));
@@ -99,7 +107,6 @@ int smashSendMsg(int fd, byte type, void* msg){
 	if(msgType & ackType && ackType & MSG_CODE_ACK){
 		return result;
 	}
-	else
-
+	
 	return TELEM_ERR_MSG_NACK;
 }
