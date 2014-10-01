@@ -60,46 +60,43 @@ int main(int argc, const char* argv[]){
 	assert(!icInit());
 	
 	while(1){
-		int msgType = 0;
-		char buf[128] = {0};
+		byte msgType = 0;
+		byte buf[128] = {0};
 
 		clear();
 
 		sprintf(buf, "ypr = ( %f, %f, %f )", state->imuAngles[0], state->imuAngles[1], state->imuAngles[2]);
 		icText(2, 2, buf);
-/*
-		if(!smashReceiveCode(fd_radio, &msgType)){
+
+		if(atAvailable(fd_radio)){
+			smashReceiveMsg(fd_radio, &msgType, buf);
 			//if(msgType == 0) continue;
-			//printf("Message type %d\n", msgType);
+			printf("Message type %d\n", msgType);
 
 			switch(msgType){
 				case MSG_CODE_THROTTLE:
 					{
 						RotorStates temp = {0};
-						if(!smashReceiveMsg(fd_radio, &temp)){
-							//memcpy(&rotor_st, &temp, sizeof(RotorStates));
+						memcpy(buf, &temp, sizeof(RotorStates));
 
-							printf("Rotors = {%d, %d, %d, %d}\n",
-								(int)temp[0],
-								(int)temp[1],
-								(int)temp[2],
-								(int)temp[3]
-							); 
-							//icText(3,3,"*************");
-						}
+						sprintf(buf, "Rotors = {%d, %d, %d, %d}\n",
+							(int)temp[0],
+							(int)temp[1],
+							(int)temp[2],
+							(int)temp[3]
+						); 
+							icText(3,3,buf);
 					}
 					break;
-				case MSG_CODE_STATUS:
+				case MSG_CODE_STATUS_REQ:
 					{
-						//icText(2,3,"*************");
-						smashSendStatus(fd_radio, state);
+						smashSendMsg(fd_radio, MSG_CODE_STATUS, state);
 					}
 					break;
 				default:;
 					printf("Unrecognized message!\n");
 			}
 		} 	
-*/
 
 		//smashSpeedSet(fd_rotors, rotor_st);
 		/*if(lnReadMsg(gps_buf, 255)){
