@@ -62,31 +62,36 @@ int main(int argc, char* argv[]){
 	glPointSize(3);
 	glEnable(GL_DEPTH_TEST);
 
-	if(controlsSetup(throttle_callback)){
-		return 4;
-	}
+	//if(controlsSetup(throttle_callback)){
+	//	return 4;
+	//}
 
 	printf("Stick selected!\n");
 
 	while(!glfwWindowShouldClose(window)){
 		byte msgBuf[128];
 
+		write(1, ".", 1);
 		updateView();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+
 		if(atAvailable(radio_fd)){
 			byte msgType = 0;
+			write(1, "#", 1);
 			smashReceiveMsg(radio_fd, &msgType, msgBuf);
 		}
-
-		controlsPoll();
+		write(1, "-", 1);
+		//controlsPoll();
 
 		if(!(statusTimer--)){
+			printf("Requesting status...\n");
 			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
 		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		write(1, "+", 1);
 	}
 
 }
