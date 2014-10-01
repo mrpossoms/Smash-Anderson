@@ -35,7 +35,6 @@ int main(int argc, const char* argv[]){
 	}
 
 	fd_radio = smashTelemetryInit(argv[1]);
-	//assert(!icInit());
 
 	// start servo driver and check the status
 	printf("Preparing servo driver...");
@@ -58,15 +57,17 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
+	assert(!icInit());
+	
 	while(1){
 		int msgType = 0;
 		char buf[128] = {0};
 
-		//clear();
+		clear();
 
 		sprintf(buf, "ypr = ( %f, %f, %f )", state->imuAngles[0], state->imuAngles[1], state->imuAngles[2]);
-		//icText(2, 2, buf);
-
+		icText(2, 2, buf);
+/*
 		if(!smashReceiveCode(fd_radio, &msgType)){
 			//if(msgType == 0) continue;
 			//printf("Message type %d\n", msgType);
@@ -98,7 +99,7 @@ int main(int argc, const char* argv[]){
 					printf("Unrecognized message!\n");
 			}
 		} 	
-
+*/
 
 		//smashSpeedSet(fd_rotors, rotor_st);
 		/*if(lnReadMsg(gps_buf, 255)){
@@ -110,7 +111,7 @@ int main(int argc, const char* argv[]){
 
 	
 		usleep(10000);	
-		//icPresent();
+		icPresent();
 	}
 	
 	printf("Done\n");
