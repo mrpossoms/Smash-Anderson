@@ -26,8 +26,47 @@ void printGpsCoords(GpsState* state){
 	icText(2, 4, buf);
 }
 
+void* commHandler(void* args)
+{
+	int fd_radio = *((int*)args);
+	byte msgType;
+	byte buf[128];
+
+	while(1){
+		printf("Data available\n");
+		smashReceiveMsg(fd_radio, &msgType, buf);
+		//if(msgType == 0) continue;
+		printf("Message type %d\n", msgType);
+
+		switch(msgType){
+			case MSG_CODE_THROTTLE:
+				{
+					RotorStates temp = {0};
+					memcpy(buf, &temp, sizeof(RotorStates));
+
+					sprintf(buf, "Rotors = {%d, %d, %d, %d}\n",
+						(int)temp[0],
+						(int)temp[1],
+						(int)temp[2],
+						(int)temp[3]
+					); 
+					icText(3,3,buf);
+				}
+				break;
+			case MSG_CODE_STATUS_REQ:
+				{
+					smashSendMsg(fd_radio, MSG_CODE_STATUS, state);
+				}
+				break;
+			default:;
+				printf("Unrecognized message!\n");
+		}
+	}
+}
+
 int main(int argc, const char* argv[]){
 	int fd_radio = 0;
+	pthread_t commThread;
 
 	if(argc != 2){
 		printf("Missing radio device path parameter\n");
@@ -57,47 +96,22 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
-	assert(!icInit());
-	
+//	assert(!icInit());
+
+	pthread_create(&commThread, NULL, commHandler,&fd_radio);
+
 	while(1){
-		byte msgType = 0;
-		byte buf[128] = {0};
-
+		char buf[128];
 		clear();
+		sprintf(buf, 
+			"ypr = ( %f, %f, %f )",
+			state->imuAngles[0],
+			state->imuAngles[1],
+			state->imuAngles[2]
+		);
 
-		sprintf(buf, "ypr = ( %f, %f, %f )", state->imuAngles[0], state->imuAngles[1], state->imuAngles[2]);
 		icText(2, 2, buf);
-
-		if(atAvailable(fd_radio)){
-			smashReceiveMsg(fd_radio, &msgType, buf);
-			//if(msgType == 0) continue;
-			printf("Message type %d\n", msgType);
-
-			switch(msgType){
-				case MSG_CODE_THROTTLE:
-					{
-						RotorStates temp = {0};
-						memcpy(buf, &temp, sizeof(RotorStates));
-
-						sprintf(buf, "Rotors = {%d, %d, %d, %d}\n",
-							(int)temp[0],
-							(int)temp[1],
-							(int)temp[2],
-							(int)temp[3]
-						); 
-							icText(3,3,buf);
-					}
-					break;
-				case MSG_CODE_STATUS_REQ:
-					{
-						smashSendMsg(fd_radio, MSG_CODE_STATUS, state);
-					}
-					break;
-				default:;
-					printf("Unrecognized message!\n");
-			}
-		} 	
-
+		 	
 		//smashSpeedSet(fd_rotors, rotor_st);
 		/*if(lnReadMsg(gps_buf, 255)){
 			lnParseMsg(&gps_st, gps_buf); 

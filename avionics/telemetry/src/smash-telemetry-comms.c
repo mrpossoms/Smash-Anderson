@@ -23,8 +23,10 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	size_t msgSize = 0;
 	byte   msgType = *type;
 
+	printf("Awaiting...");
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
+	printf("Type: %d\n", *type);
 
 	switch((int)msgType){
 		case MSG_CODE_THROTTLE:
