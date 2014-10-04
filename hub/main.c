@@ -33,10 +33,9 @@ void* commHandler(void* args)
 	byte buf[128];
 
 	while(1){
-		printf("Data available\n");
 		smashReceiveMsg(fd_radio, &msgType, buf);
 		//if(msgType == 0) continue;
-		printf("Message type %d\n", msgType);
+		printf("Message type %x\n", msgType);
 
 		switch(msgType){
 			case MSG_CODE_THROTTLE:
@@ -55,7 +54,9 @@ void* commHandler(void* args)
 				break;
 			case MSG_CODE_STATUS_REQ:
 				{
-					smashSendMsg(fd_radio, MSG_CODE_STATUS, state);
+					struct SmashState tempState;
+					memcpy(&tempState, state, sizeof(struct SmashState));
+					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
 				}
 				break;
 			default:;
@@ -96,7 +97,7 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
-//	assert(!icInit());
+	//assert(!icInit());
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 
