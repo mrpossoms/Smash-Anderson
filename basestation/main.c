@@ -71,17 +71,36 @@ int main(int argc, char* argv[]){
 	while(!glfwWindowShouldClose(window)){
 		byte msgBuf[128];
 
-		write(1, ".", 1);
 		updateView();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 
 		if(atAvailable(radio_fd)){
 			byte msgType = 0;
-			write(1, "#", 1);
 			smashReceiveMsg(radio_fd, &msgType, msgBuf);
+			//if(msgType == 0) continue;
+
+
+			switch(msgType){
+				case MSG_CODE_THROTTLE:
+				{
+					printf(">>>throttle message\n");
+				}
+				break;
+				case MSG_CODE_STATUS_REQ:
+				{
+					printf(">>>Status message request\n");
+				}
+				break;
+				case MSG_CODE_STATUS:
+				{
+					printf(">>>Status message\n");
+				}
+				break;
+				default:;
+				printf("Unrecognized message! %x\n", msgType);
+			}
 		}
-		write(1, "-", 1);
 		//controlsPoll();
 
 		if(!(statusTimer--)){
@@ -91,7 +110,6 @@ int main(int argc, char* argv[]){
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		write(1, "+", 1);
 	}
 
 }
