@@ -50,16 +50,13 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	if(msgSize){
 		// read the expected message
 		result = atRead(fd, msg, msgSize);
-
+		
 		// check the message size
 		if(result != msgSize){
 			return TELEM_ERR_BAD_MSG & TELEM_ERR_TIMEOUT;
 		}
 	}
-	else{
-		return result;
-	}
-
+		
 	// everything is ok to this point, ack the message
 	msgType |= MSG_CODE_ACK;
 	atWrite(fd, &msgType, sizeof(byte));
@@ -101,17 +98,14 @@ int smashSendMsg(int fd, byte type, void* msg){
 	if(msgSize){
 		// send the message
 		atWrite(fd, msg, msgSize);
-		
-		// read an ack from the peer
-		result = atRead(fd, &ackType, sizeof(byte));
-
-		// ensure the ack recieved was for the expected message
-		// and confirm that it was indeed an ack
-		if(msgType & ackType && ackType & MSG_CODE_ACK){
-			return result;
-		}
 	}
-	else{
+
+	// read an ack from the peer
+	result = atRead(fd, &ackType, sizeof(byte));
+
+	// ensure the ack recieved was for the expected message
+	// and confirm that it was indeed an ack
+	if(msgType & ackType && ackType & MSG_CODE_ACK){
 		return result;
 	}
 
