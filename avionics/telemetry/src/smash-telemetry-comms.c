@@ -26,9 +26,10 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	printf("Awaiting...");
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
-	printf("Type: %d\n", *type);
+	msgType = *type;
+	printf("Type: %x\n", *type);
 
-	switch((int)msgType){
+	switch(msgType){
 		case MSG_CODE_THROTTLE:
 			msgSize = sizeof(RotorStates);
 			break;
@@ -37,6 +38,7 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 			break;
 		case MSG_CODE_STATUS_REQ:
 			msgSize = 0;
+			break;
 		case MSG_CODE_DATA:
 			msgSize = sizeof(struct SmashData);
 			break;

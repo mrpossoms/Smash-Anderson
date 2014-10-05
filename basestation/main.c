@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <GLFW/glfw3.h>
@@ -77,9 +78,10 @@ int main(int argc, char* argv[]){
 
 		if(atAvailable(radio_fd)){
 			byte msgType = 0;
-			smashReceiveMsg(radio_fd, &msgType, msgBuf);
+			int bytes = smashReceiveMsg(radio_fd, &msgType, msgBuf);
+			printf("resulted in %x\n", bytes);
+			assert(bytes > 0);
 			//if(msgType == 0) continue;
-
 
 			switch(msgType){
 				case MSG_CODE_THROTTLE:
@@ -95,6 +97,10 @@ int main(int argc, char* argv[]){
 				case MSG_CODE_STATUS:
 				{
 					printf(">>>Status message\n");
+
+					float* angles =((struct SmashState*)msgBuf)->imuAngles;
+					printf("ypr = ( %f, %f, %f )\n", angles[0], angles[1], angles[2]);
+					return 0;
 				}
 				break;
 				default:;
