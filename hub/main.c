@@ -56,6 +56,7 @@ void* commHandler(void* args)
 				{
 					struct SmashState tempState;
 					memcpy(&tempState, state, sizeof(struct SmashState));
+					tempState.imuAngles[0] = 13.37f;
 					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
 				}
 				break;

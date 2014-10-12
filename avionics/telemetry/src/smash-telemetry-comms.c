@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
 
 #define DELAY 18000
 
@@ -27,7 +28,9 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
 	msgType = *type;
-	printf("Type: %x\n", *type);
+	printf("Type: %x result: %d\n", *type, result);
+
+	assert(result >= 0);
 
 	switch(msgType){
 		case MSG_CODE_THROTTLE:

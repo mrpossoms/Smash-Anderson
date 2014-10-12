@@ -100,7 +100,7 @@ int main(int argc, char* argv[]){
 
 					float* angles =((struct SmashState*)msgBuf)->imuAngles;
 					printf("ypr = ( %f, %f, %f )\n", angles[0], angles[1], angles[2]);
-					return 0;
+					//return 0;
 				}
 				break;
 				default:;

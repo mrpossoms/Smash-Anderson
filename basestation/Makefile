@@ -8,7 +8,6 @@ LINK= -lardutalk -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -fr
 LIB=lib$(NAME).a
 DEP_SRC=./../avionics/telemetry/src/*.c
 DEP_INC=-I./../avionics/telemetry/include -I./../hub/include
-DEP_LIB=-L./../avionics/telemetry/lib
 
 TSTINC=./tests/include
 TST=./tests
@@ -16,7 +15,7 @@ TSTS=./tests/*.c
 
 all:
 ifdef NAME
-	gcc $(DEP_INC) $(INC) $(DEP_LIB) $(DEP_SRC) $(SRC) main.c $(LINK)
+	gcc $(DEP_INC) $(INC) $(DEP_SRC) $(SRC) main.c $(LINK)
 	rm *.o
 else
 	@echo "Project not setup! Please run 'make setup' first."
