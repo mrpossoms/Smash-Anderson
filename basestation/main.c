@@ -81,8 +81,7 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 		if(atAvailable(radio_fd)){
 			byte msgType = 0;
 			int bytes = smashReceiveMsg(radio_fd, &msgType, msgBuf);
-			printf("resulted in %x\n", bytes);
-			//assert(bytes > 0);
+			assert(bytes > 0);
 			//if(msgType == 0) continue;
 
 			switch(msgType){
@@ -111,9 +110,10 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 		}
 		//controlsPoll();
 
-		if(!(statusTimer--)){
+		if((statusTimer--) == 230){
 			printf("Requesting status...\n");
 			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
+			statusTimer = 0xFF;
 		}
 
 		glfwSwapBuffers(window);
