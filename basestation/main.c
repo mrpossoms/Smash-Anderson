@@ -112,6 +112,8 @@ int main(int argc, char* argv[]){
 		if(!(statusTimer--)){
 			printf("Requesting status...\n");
 			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
+
+			sleep(1);
 		}
 
 		glfwSwapBuffers(window);

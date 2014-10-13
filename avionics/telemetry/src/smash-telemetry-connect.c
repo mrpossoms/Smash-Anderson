@@ -7,7 +7,7 @@
 int smashTelemetryInit(const char* dev){
 	int fd = -1;
 
-	if ((fd = atOpen(dev, 115200, AT_BIN | AT_BLOCKING | AT_NCHKSUM)) < 0) {
+	if ((fd = atOpen(dev, 115200, AT_BIN | AT_NCHKSUM)) < 0) {
 		printf("Failed to open the telemetry bus.");
 		exit(1);
 	}

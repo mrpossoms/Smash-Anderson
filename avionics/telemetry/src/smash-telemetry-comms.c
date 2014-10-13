@@ -50,7 +50,7 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 				return TELEM_ERR_BAD_CODE;
 			}
 			else{
-				return TELEM_ERR_BAD_CODE & TELEM_ERR_TIMEOUT;
+				return TELEM_ERR_BAD_CODE | TELEM_ERR_TIMEOUT;
 			}
 	}
 
@@ -60,7 +60,7 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 		
 		// check the message size
 		if(result != msgSize){
-			return TELEM_ERR_BAD_MSG & TELEM_ERR_TIMEOUT;
+			return TELEM_ERR_BAD_MSG | TELEM_ERR_TIMEOUT;
 		}
 	}
 		
