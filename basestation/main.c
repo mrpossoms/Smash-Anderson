@@ -37,6 +37,8 @@ static void throttle_callback(float x, float y){
 
 int main(int argc, char* argv[]){
 
+printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
+
 	if(argc != 2){
 		printf("Error: missing argument for radio device.\n\tUsage: basestation [device path]\n");
 		return -1;
@@ -112,8 +114,6 @@ int main(int argc, char* argv[]){
 		if(!(statusTimer--)){
 			printf("Requesting status...\n");
 			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
-
-			sleep(1);
 		}
 
 		glfwSwapBuffers(window);

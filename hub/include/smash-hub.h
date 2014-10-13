@@ -17,12 +17,12 @@
 #define SMASH_SHM_KEY 5345001
 
 struct SmashState{
-	int      subSystemShouldShutdown;
-	int      subSystemOnline; // bit mask collection indicating which systems are functioning
+	int32_t      subSystemShouldShutdown;
+	int32_t      subSystemOnline; // bit mask collection indicating which systems are functioning
 	float    imuAngles[3];    // orientation
 	float    imuOmegas[3];    // angular accelerations
 	GpsState gpsState;        // gps location fix and status
-	char     speedTargets[4]; // target rotor speeds
+	unsigned char     speedTargets[4]; // target rotor speeds
 };
 
 static inline void* createAndAttach(key_t key)
