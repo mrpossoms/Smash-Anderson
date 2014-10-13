@@ -24,13 +24,13 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	size_t msgSize = 0;
 	byte   msgType = *type;
 
-	printf("Awaiting...");
+	printf("smashReceiveMsg() - Awaiting...");
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
 	msgType = *type;
 	printf("Type: %x result: %d\n", *type, result);
 
-	assert(result >= 0);
+	//assert(result >= 0);
 
 	switch(msgType){
 		case MSG_CODE_THROTTLE:
@@ -50,6 +50,7 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 				return TELEM_ERR_BAD_CODE;
 			}
 			else{
+				printf("smashReceiveMsg() - No code for msg type %x result of %d\n", *type, result);
 				return TELEM_ERR_BAD_CODE | TELEM_ERR_TIMEOUT;
 			}
 	}
@@ -58,8 +59,11 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 		// read the expected message
 		result = atRead(fd, msg, msgSize);
 		
+		printf("Msg size: %d Res Size: %d\n",msgSize, result);
+
 		// check the message size
 		if(result != msgSize){
+			printf("smashReceiveMsg() - Message size did not match for type %x result of %d\n", *type, result);
 			return TELEM_ERR_BAD_MSG | TELEM_ERR_TIMEOUT;
 		}
 	}
@@ -98,12 +102,13 @@ int smashSendMsg(int fd, byte type, void* msg){
 				return TELEM_ERR_BAD_CODE;
 			}
 			else{
-				return TELEM_ERR_BAD_CODE & TELEM_ERR_TIMEOUT;
+				return TELEM_ERR_BAD_CODE | TELEM_ERR_TIMEOUT;
 			}
 	}
 
 	if(msgSize){
 		// send the message
+		printf("Sending message of size %d\n", msgSize);
 		atWrite(fd, msg, msgSize);
 	}
 

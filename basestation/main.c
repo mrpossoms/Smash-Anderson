@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
 			byte msgType = 0;
 			int bytes = smashReceiveMsg(radio_fd, &msgType, msgBuf);
 			printf("resulted in %x\n", bytes);
-			assert(bytes > 0);
+			//assert(bytes > 0);
 			//if(msgType == 0) continue;
 
 			switch(msgType){
