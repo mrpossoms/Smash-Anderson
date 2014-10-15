@@ -1,7 +1,9 @@
+#include <math.h>
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <GLFW/glfw3.h>
+#include <glu.h>
 #include <smash-telemetry.h>
 #include <ardutalk.h>
 #include "controls.h"
@@ -9,6 +11,7 @@
 static GLFWwindow* window = NULL;
 static int radio_fd;
 static unsigned char statusTimer;
+static struct SmashState state;
 
 static void updateView(){
 	float ratio;
@@ -77,6 +80,36 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 		updateView();
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+		glLoadIdentity();
+
+		glMatrixMode (GL_PROJECTION);
+		glLoadIdentity();
+		glFrustum (-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
+   
+		glMatrixMode (GL_MODELVIEW);
+		glLoadIdentity ();
+		gluLookAt (
+			0.0, 0.0, -5.0, // eye position
+			0.0, 0.0, 0.0,  // target
+			0.0, 1.0, 0.0   // up
+		);
+		glRotatef(-state.imuAngles[0] * (180.0 / M_PI) + 45, 0.0f, 1.0f, 0.0f);
+		glRotatef(-state.imuAngles[1] * (180.0 / M_PI), 1.0f, 0.0f, 0.0f);
+		glRotatef(state.imuAngles[2] * (180.0 / M_PI), 0.0f, 0.0f, 1.0f);
+
+
+		glBegin(GL_LINES);
+			glVertex3f(-1, 0, 0);
+			glColor3f(1, 1, 1);
+			glVertex3f(1, 0, 0);
+			glColor3f(1, 1, 1);
+
+			glVertex3f(0, 0, 1);
+			glColor3f(1, 1, 1);
+			glVertex3f(0, 0, -1);
+			glColor3f(1, 1, 1);
+		glEnd();
+		glfwSwapBuffers(window);
 
 		if(atAvailable(radio_fd)){
 			byte msgType = 0;
@@ -99,7 +132,8 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 				{
 					printf(">>>Status message\n");
 
-					float* angles =((struct SmashState*)msgBuf)->imuAngles;
+					state = *((struct SmashState*)msgBuf);
+					float* angles = state.imuAngles;
 					printf("ypr = ( %f, %f, %f )\n", angles[0], angles[1], angles[2]);
 					//return 0;
 				}
@@ -110,13 +144,12 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 		}
 		//controlsPoll();
 
-		if((statusTimer--) == 230){
+		if((statusTimer--) == 250){
 			printf("Requesting status...\n");
 			smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
 			statusTimer = 0xFF;
 		}
 
-		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
