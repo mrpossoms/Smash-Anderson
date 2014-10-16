@@ -13,6 +13,25 @@ static int radio_fd;
 static unsigned char statusTimer;
 static struct SmashState state;
 
+static void drawModel(){
+		glBegin(GL_LINES);
+			glVertex3f(-1, 0, 0 );
+			glColor3f ( 1, 1, 1 );
+			glVertex3f( 1, 0, 0 );
+			glColor3f ( 1, 1, 1 );
+
+			glVertex3f(-1, 0.1f, 0 );
+			glColor3f ( 1, 1, 1 );
+			glVertex3f( 1, 0.1f, 0 );
+			glColor3f ( 1, 1, 1 );
+
+			glVertex3f(0, 0, 1);
+			glColor3f(1, 1, 1);
+			glVertex3f(0, 0, -1);
+			glColor3f(1, 1, 1);
+		glEnd();
+}
+
 static void updateView(){
 	float ratio;
 	int width, height;
@@ -98,17 +117,8 @@ printf("Sizeof(Gpstate) = %d\n", sizeof(GpsState));
 		glRotatef(state.imuAngles[2] * (180.0 / M_PI), 0.0f, 0.0f, 1.0f);
 
 
-		glBegin(GL_LINES);
-			glVertex3f(-1, 0, 0);
-			glColor3f(1, 1, 1);
-			glVertex3f(1, 0, 0);
-			glColor3f(1, 1, 1);
+		drawModel();
 
-			glVertex3f(0, 0, 1);
-			glColor3f(1, 1, 1);
-			glVertex3f(0, 0, -1);
-			glColor3f(1, 1, 1);
-		glEnd();
 		glfwSwapBuffers(window);
 
 		if(atAvailable(radio_fd)){
