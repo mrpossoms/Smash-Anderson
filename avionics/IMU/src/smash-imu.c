@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
-//#define __IMU_DEBUG
+#define __IMU_DEBUG
 
 const float DEG_TO_RAD = (M_PI / 180.0f);
 
@@ -32,7 +32,6 @@ int smashImuSync(const char* token){
 	unsigned char timeOut = 0;
 
 	while(1){
-		usleep(10000);
 		atRead(IMU_FD, &received, 1);
 		if(received == token[off]){
 			++off; 
@@ -53,7 +52,7 @@ int smashImuSync(const char* token){
 		off = 0;
 
 #ifdef __IMU_DEBUG
-		printf("%u\n", timeOut);
+		printf("timeout %u\n", timeOut);
 #endif
 
 		if(timeOut > len){
@@ -70,9 +69,12 @@ void* __IMUpoller(void* params){
 	float temp[6];
 
 	while(IS_POLLING_IMU){
-		
-		if(atAvailable(IMU_FD) < VEC6){
-			usleep(1000);
+		//sleep(1);	
+		usleep(1000);
+		if((bytes = atAvailable(IMU_FD)) < VEC6){
+#ifdef __IMU_DEBUG
+			printf("Available %d\n", bytes);
+#endif
 			continue;
 		}
 
@@ -84,15 +86,11 @@ void* __IMUpoller(void* params){
 			ORIENTATION[2] *= DEG_TO_RAD;
 
 #ifdef __IMU_DEBUG
-			printf("OK %d (%f, %f, %f) w(%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);
+			printf("OK %d (%.3f, %.3f, %.3f) w(%.3f, %.3f, %.3f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);
 #endif
-
+			usleep(100000);
 			changeCallback(ORIENTATION);
-		}
-		else{
-#ifdef __IMU_DEBUG
-			printf("Read %d (%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2]);
-#endif
+		
 		}
 	}
 
@@ -111,10 +109,8 @@ int smashImuInit(const char* dev, void (*onChange)(float*)){
 		0x00, 0x00, 0x01, 0x10, 0x00, 0x00
 	};
 
-	IMU_FD = atOpen(dev, 57600, 0);
+	IMU_FD = atOpen(dev, 57600, AT_BIN | AT_NCHKSUM);
 	tcsetattr(IMU_FD, TCSANOW, (struct termios*)cbuf);	
-
-	atConfig(IMU_FD, AT_BIN | AT_NCHKSUM);
 
 	assert((changeCallback = onChange) != NULL);
 
