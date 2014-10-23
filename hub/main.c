@@ -35,7 +35,7 @@ void* commHandler(void* args)
 	while(1){
 		smashReceiveMsg(fd_radio, &msgType, buf);
 		//if(msgType == 0) continue;
-		printf("Message type %x\n", msgType);
+		//printf("Message type %x\n", msgType);
 
 		switch(msgType){
 			case MSG_CODE_THROTTLE:
@@ -97,7 +97,7 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
-	//assert(!icInit());
+	assert(!icInit());
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 
@@ -105,7 +105,7 @@ int main(int argc, const char* argv[]){
 		char buf[128];
 		clear();
 		sprintf(buf, 
-			"ypr = ( %f, %f, %f )",
+			"ypr = ( %.5f, %.5f, %.5f )",
 			state->imuAngles[0],
 			state->imuAngles[1],
 			state->imuAngles[2]
