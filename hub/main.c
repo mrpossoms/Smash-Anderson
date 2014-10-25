@@ -35,7 +35,7 @@ void* commHandler(void* args)
 	while(1){
 		smashReceiveMsg(fd_radio, &msgType, buf);
 		//if(msgType == 0) continue;
-		//printf("Message type %x\n", msgType);
+		printf("Message type %x\n", msgType);
 
 		switch(msgType){
 			case MSG_CODE_THROTTLE:
@@ -97,7 +97,7 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
-	assert(!icInit());
+//	assert(!icInit());
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 
@@ -121,6 +121,7 @@ int main(int argc, const char* argv[]){
 		if(gps_st.Fix)
 			printGpsCoords(&gps_st);		
 
+		++state->subSystemLife[SMASH_HUB_I];
 	
 		usleep(10000);	
 		icPresent();

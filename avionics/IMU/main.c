@@ -36,8 +36,10 @@ int main(int argc, char* argv[])
 	state->subSystemOnline |= SMASH_HUB_MSK_IMU;
 
 	// wait for a signal to shutdown the system
-	while(!(state->subSystemShouldShutdown & SMASH_HUB_MSK_IMU))
+	while(!(state->subSystemShouldShutdown & SMASH_HUB_MSK_IMU)){
+		++state->subSystemLife[SMASH_IMU_I];
 		usleep(10000);
+	}
 
 	return 0;
 }
