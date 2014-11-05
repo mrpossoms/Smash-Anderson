@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <GLFW/glfw3.h>
 #include <GLUT/glut.h>
 #include <glu.h>
@@ -10,27 +11,38 @@
 #include "controls.h"
 
 static GLFWwindow* window = NULL;
-static int radio_fd;
+static int radioFd;
+static int radioEnabled;
+static int joystickAvailable;
 static unsigned char statusTimer;
 static struct SmashState state;
 static float displayAngles[3];
 
+static void drawThrottleLine(float x, float y, float z, int i){
+	float p = state.speedTargets[i] / 255.0f;
+	glColor3f(0, p, 1);
+	glVertex3f(x, y, z);
+	glVertex3f(x, y + 0.5f * p, z);
+}
+
 static void drawModel(){
 		static const float d = 0.2f;
 
-		glBegin(GL_LINES);
+		glBegin(GL_QUADS);
 			glColor3f(1, 0, 0);
 			glVertex3f(-1, 0, 0 );
 			glVertex3f( 1, 0, 0 );
 
-			glVertex3f(-1, 0,    0 );
-			glVertex3f(-1, d, 0 );
-			 
-			glVertex3f( 1, 0,    0 );
+			glVertex3f( 1, 0, 0 );
 			glVertex3f( 1, d, 0 );
 
+			glVertex3f(-1, 0, 0 );
+			glVertex3f(-1, d, 0 );
+			
 			glVertex3f(-1, d, 0 );
 			glVertex3f( 1, d, 0 );
+
+			glColor3f(0.5, 0, 0);
 
 			glVertex3f(0, 0, 1);
 			glVertex3f(0, 0, -1);
@@ -43,6 +55,13 @@ static void drawModel(){
 
 			glVertex3f(0, d,  1);
 			glVertex3f(0, d, -1);
+		glEnd();
+
+		glBegin(GL_LINES);
+			drawThrottleLine(-1, d, 0, 0);
+			drawThrottleLine( 1, d, 0, 1);
+			drawThrottleLine( 0, d, 1, 2);
+			drawThrottleLine( 0, d,-1, 3);
 		glEnd();
 }
 
@@ -62,8 +81,8 @@ static void throttle_callback(float x, float y){
 	RotorStates throttle = {
 		t, t, t, t
 	};
-	printf("Sending message to %d %f %f %d\n", radio_fd, x, y, throttle[0]);
-	//smashSendMsg(radio_fd, MSG_CODE_THROTTLE, &throttle);
+	printf("Sending message to %d %f %f %d\n", radioFd, x, y, throttle[0]);
+	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
 }
 
 int w, h;
@@ -82,10 +101,10 @@ static void resize(int width, int height)
 
 static void update(int value)
 {
-	if(atAvailable(radio_fd)){
+	if(atAvailable(radioFd)){
 		unsigned char msgBuf[128];
 		byte msgType = 0;
-		int bytes = smashReceiveMsg(radio_fd, &msgType, msgBuf);
+		int bytes = smashReceiveMsg(radioFd, &msgType, msgBuf);
 		//assert(bytes > 0);
 		//if(msgType == 0) continue;
 
@@ -104,7 +123,6 @@ static void update(int value)
 			{
 
 				state = *((struct SmashState*)msgBuf);
-				float* angles = state.imuAngles;
 				//printf("ypr = ( %f, %f, %f )\n", angles[0], angles[1], angles[2]);
 				//return 0;
 			}
@@ -114,11 +132,21 @@ static void update(int value)
 		}
 	}
 
-	controlsPoll();
+	if(!radioEnabled){
+		state.imuAngles[0] += 0.01f;
+		state.imuAngles[1] += 0.01f;
+
+		state.speedTargets[0] = state.speedTargets[1] = (unsigned char)((sin(state.imuAngles[0]) + 1.0f) * 128);
+		state.speedTargets[2] = state.speedTargets[3] = (unsigned char)((cos(state.imuAngles[1]) + 1.0f) * 128);
+	}
+
+	if(joystickAvailable){
+		controlsPoll();
+	}
 
 	// if((statusTimer--) == 240){
 	// 	//printf("Requesting status...\n");
-	// 	smashSendMsg(radio_fd, MSG_CODE_STATUS_REQ, NULL);
+	// 	smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
 	// 	statusTimer = 0xFF;
 	// }
 
@@ -197,6 +225,7 @@ static void display(void){
 	setOrthographicProjection();
     glPushMatrix();
     glLoadIdentity();
+	glColor3f(1, 0, 0);
 	drawString(10, 20, "Smash-Anderson Basestation", GLUT_BITMAP_HELVETICA_18);
 	printGPS(&state.gpsState, 20, 10);
 
@@ -213,9 +242,13 @@ static void display(void){
 } 
 
 int main(int argc, char* argv[]){
+	radioEnabled = 1;
+	joystickAvailable = 0;
+
 	if(argc != 2){
 		printf("Error: missing argument for radio device.\n\tUsage: basestation [device path]\n");
-		return -1;
+		printf("Proceeding without radio\n");
+		radioEnabled = 0;
 	}
 
 	if(!glfwInit()){
@@ -227,9 +260,11 @@ int main(int argc, char* argv[]){
 	// 	printf("Error!\n");
 	// 	return 2;
 	// }
-	controlsSetup(throttle_callback);
+	if(!controlsSetup(throttle_callback)){
+		joystickAvailable = 1;
+	}
 
-	if(!(radio_fd = smashTelemetryInit(argv[1]))){
+	if(radioEnabled && !(radioFd = smashTelemetryInit(argv[1]))){
 		return 3;
 	}
 

@@ -1,6 +1,6 @@
 NAME=BaseStation
 EDITOR=
-FLAGS=-Wint-to-pointer-cast
+FLAGS=-Wint-to-pointer-cast -Wno-deprecated-declarations
 SRC=./src/*.c
 INC=-I./include  -I /Library/Frameworks/SDL2.framework/Headers -I/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/
 DST=./lib
@@ -15,7 +15,7 @@ TSTS=./tests/*.c
 
 all:
 ifdef NAME
-	gcc $(DEP_INC) $(INC) $(DEP_SRC) $(SRC) main.c $(LINK)
+	gcc $(FLAGS) $(DEP_INC) $(INC) $(DEP_SRC) $(SRC) main.c $(LINK)
 	rm *.o
 else
 	@echo "Project not setup! Please run 'make setup' first."
