@@ -83,6 +83,15 @@ static void throttle_callback(float x, float y){
 	};
 	printf("Sending message to %d %f %f %d\n", radioFd, x, y, throttle[0]);
 	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
+
+	if(joystickAvailable){
+
+		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 128.0f + 127);
+		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 128.0f + 127);
+
+		state.speedTargets[2] = (unsigned char)((-y < 0 ? 0 : -y) * 128.0f + 127);
+		state.speedTargets[3] = (unsigned char)((y < 0 ? 0 : y) * 128.0f + 127);
+	}
 }
 
 int w, h;
@@ -135,13 +144,10 @@ static void update(int value)
 	if(!radioEnabled){
 		state.imuAngles[0] += 0.01f;
 		state.imuAngles[1] += 0.01f;
-
-		state.speedTargets[0] = state.speedTargets[1] = (unsigned char)((sin(state.imuAngles[0]) + 1.0f) * 128);
-		state.speedTargets[2] = state.speedTargets[3] = (unsigned char)((cos(state.imuAngles[1]) + 1.0f) * 128);
 	}
 
 	if(joystickAvailable){
-		controlsPoll();
+		controlsPoll();		
 	}
 
 	// if((statusTimer--) == 240){
