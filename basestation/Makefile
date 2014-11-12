@@ -16,7 +16,6 @@ TSTS=./tests/*.c
 all:
 ifdef NAME
 	gcc $(FLAGS) $(DEP_INC) $(INC) $(DEP_SRC) $(SRC) main.c $(LINK)
-	rm *.o
 else
 	@echo "Project not setup! Please run 'make setup' first."
 endif

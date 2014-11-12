@@ -1,5 +1,4 @@
 #include "smash-imu.h"
-#include "smash-imu-decoder.h"
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
@@ -19,6 +18,7 @@ int IS_POLLING_IMU = 0;
 int IMU_FD = -1;
 int synched = 0;
 float ORIENTATION[6];
+float YPR_OFFSETS[3] = { 0, 0, 0 };
 void (*changeCallback)(float*);
 
 void endianSwap(float* f){
@@ -82,6 +82,16 @@ void* __IMUpoller(void* params){
 			ORIENTATION[0] *= DEG_TO_RAD;
 			ORIENTATION[1] *= DEG_TO_RAD;
 			ORIENTATION[2] *= DEG_TO_RAD;
+
+			// check to see if offsets have been set yet
+			if(!(YPR_OFFSETS[0] + YPR_OFFSETS[1] + YPR_OFFSETS[2])){
+				memcpy(YPR_OFFSETS, ORIENTATION, sizeof(YPR_OFFSETS));	
+			}
+
+			// apply orientation offsets
+			ORIENTATION[0] -= YPR_OFFSETS[0];
+			ORIENTATION[1] -= YPR_OFFSETS[1];
+			ORIENTATION[2] -= YPR_OFFSETS[2];
 
 #ifdef __IMU_DEBUG
 			printf("OK %d (%f, %f, %f) w(%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);

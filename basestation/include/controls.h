@@ -1,9 +1,9 @@
 #ifndef __CONTROLS
 #define __CONTROLS
 
-typedef void(throttleCallback)(float, float);
+typedef void(stickCallback)(float, float);
 
-int controlsSetup(throttleCallback cb);
+int controlsSetup(stickCallback cb, stickCallback balanceCb);
 int controlsPoll();
 
 #endif

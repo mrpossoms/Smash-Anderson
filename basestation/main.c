@@ -75,7 +75,13 @@ void drawString(int x, int y, char *string, void* font){
 	}
 }
 
-static void throttle_callback(float x, float y){
+static void balance_callback(float x, float y)
+{
+	printf("Balance = (%f, %f)\n", x, y);
+}
+
+static void throttle_callback(float x, float y)
+{
 	y = y > 0 ? 0 : -y;
 	byte t = (byte)(y * 255.0f);
 	RotorStates throttle = {
@@ -260,7 +266,7 @@ int main(int argc, char* argv[]){
 	// 	printf("Error!\n");
 	// 	return 2;
 	// }
-	if(!controlsSetup(throttle_callback)){
+	if(!controlsSetup(throttle_callback, balance_callback)){
 		joystickAvailable = 1;
 	}
 

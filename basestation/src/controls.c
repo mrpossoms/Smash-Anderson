@@ -17,10 +17,69 @@ struct JoystickState
 static int CONTROLS_JOYSTICK_COUNT = 0;
 static struct JoystickState CONTROLS_JOYSTICKS[10] = {0};
 static struct JoystickState* CONTROLS_THROTTLE_STICK = NULL;
+static struct JoystickState* CONTROLS_BALANCE_STICK = NULL;
 void (*CONTROLS_THROTTLE_CALLBACK)(float, float);
+void (*CONTROLS_BALANCE_CALLBACK)(float, float);
 
-int controlsSetup(throttleCallback cb){
-	CONTROLS_THROTTLE_CALLBACK = cb;
+void selectStick(struct JoystickState* stickOut)
+{
+	// reset the stick measurements
+	for(int i = CONTROLS_JOYSTICK_COUNT; i--;){
+		struct JoystickState* stick = CONTROLS_JOYSTICKS + i;
+		const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+		memcpy(stick->values, values, sizeof(float) * stick->axes);
+	}
+
+	while(1){
+		for(int i = CONTROLS_JOYSTICK_COUNT; i--;){
+			struct JoystickState* stick = CONTROLS_JOYSTICKS + i;
+			const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+
+			// dot the current and last joystick readings
+			float lCurrent = 0, lLast = 0;
+			for(int j = stick->axes; j--;){
+				lCurrent += values[j] * values[j];
+				lLast    += stick->values[j] * stick->values[j]; 
+			}
+
+			// retain the new measurement
+			memcpy(stick->values, values, sizeof(float) * stick->axes);
+
+			// this stick probably moved!
+			if(fabs(lCurrent - lLast) > 0.01f){
+				stickOut = stick;
+				return;
+			}
+		}
+	}
+}
+
+void pollStick(struct JoystickState* stick, void(*cb)(float, float))
+{
+	const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+
+	assert(stick->axes >= 2);
+
+	// dot the current and last joystick readings
+	float lCurrent = 0, lLast = 0;
+	for(int j = stick->axes; j--;){
+		lCurrent += values[j] * values[j];
+		lLast    += stick->values[j] * stick->values[j]; 
+	}
+
+	// retain the new measurement
+	memcpy(stick->values, values, sizeof(float) * stick->axes);
+
+	// this stick probably moved!
+	if(fabs(lCurrent - lLast) > 0.001f){
+		cb(values[0], values[1]);
+		return;
+	}
+}
+
+int controlsSetup(stickCallback throttleCb, stickCallback balanceCb){
+	CONTROLS_THROTTLE_CALLBACK = throttleCb;
+	CONTROLS_BALANCE_CALLBACK = balanceCb;
 
 	// find the number of joysticks connected
 	for(int i = 0; i < 10; ++i){
@@ -45,55 +104,21 @@ int controlsSetup(throttleCallback cb){
 		return -1;
 	}
 
-	printf("Please move the throttle stick to select it.\n");
+	printf("Please move the throttle stick to select it...");
+	fflush(stdout);
+	selectStick(CONTROLS_THROTTLE_STICK);
+	printf("Selected!\n");
+	sleep(1);
 
-	while(1){
-		for(int i = CONTROLS_JOYSTICK_COUNT; i--;){
-			struct JoystickState* stick = CONTROLS_JOYSTICKS + i;
-			const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
-
-			// dot the current and last joystick readings
-			float lCurrent = 0, lLast = 0;
-			for(int j = stick->axes; j--;){
-				lCurrent += values[j] * values[j];
-				lLast    += stick->values[j] * stick->values[j]; 
-			}
-
-			// retain the new measurement
-			memcpy(stick->values, values, sizeof(float) * stick->axes);
-
-			// this stick probably moved!
-			if(fabs(lCurrent - lLast) > 0.01f){
-				CONTROLS_THROTTLE_STICK = stick;
-				return 0;
-			}
-		}
-
-		usleep(10000);
-	}
+	printf("Please move the balance stick to select it...");
+	fflush(stdout);
+	selectStick(CONTROLS_BALANCE_STICK);
+	printf("Selected!\n");
 }
 
 int controlsPoll(){
-	struct JoystickState* stick = CONTROLS_THROTTLE_STICK;
-	const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+	pollStick(CONTROLS_THROTTLE_STICK, CONTROLS_THROTTLE_CALLBACK);
+	pollStick(CONTROLS_BALANCE_STICK, CONTROLS_BALANCE_CALLBACK);
 
-	assert(stick->axes >= 2);
-
-	// dot the current and last joystick readings
-	float lCurrent = 0, lLast = 0;
-	for(int j = stick->axes; j--;){
-		lCurrent += values[j] * values[j];
-		lLast    += stick->values[j] * stick->values[j]; 
-	}
-
-	// retain the new measurement
-	memcpy(stick->values, values, sizeof(float) * stick->axes);
-
-	// this stick probably moved!
-	if(fabs(lCurrent - lLast) > 0.001f){
-		CONTROLS_THROTTLE_CALLBACK(values[0], values[1]);
-		return 0;
-	}
-
-	return -1;
+	return 0;
 }
