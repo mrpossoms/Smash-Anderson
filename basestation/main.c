@@ -17,6 +17,7 @@ static int joystickAvailable;
 static unsigned char statusTimer;
 static struct SmashState state;
 static float displayAngles[3];
+static float throttle;
 
 static void drawThrottleLine(float x, float y, float z, int i){
 	float p = state.speedTargets[i] / 255.0f;
@@ -75,22 +76,21 @@ void drawString(int x, int y, char *string, void* font){
 	}
 }
 
-static void throttle_callback(float x, float y){
-	y = y > 0 ? 0 : -y;
-	byte t = (byte)(y * 255.0f);
-	RotorStates throttle = {
-		t, t, t, t
-	};
-	printf("Sending message to %d %f %f %d\n", radioFd, x, y, throttle[0]);
+static void throttle_callback(int axes, float* values)
+{
+	float x = values[0], y = values[1];
+
+	//printf("Sending message to %d %f %f %d\n", radioFd, x, y, throttle[0]);
 	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
 
 	if(joystickAvailable){
+		float t = 127.0f * (values[4] * 0.5f + 0.5f);
 
-		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 128.0f + 127);
-		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 128.0f + 127);
+		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 127.0f + t);
+		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 127.0f + t);
 
-		state.speedTargets[2] = (unsigned char)((-y < 0 ? 0 : -y) * 128.0f + 127);
-		state.speedTargets[3] = (unsigned char)((y < 0 ? 0 : y) * 128.0f + 127);
+		state.speedTargets[2] = (unsigned char)((-y < 0 ? 0 : -y) * 127.0f + t);
+		state.speedTargets[3] = (unsigned char)((y < 0 ? 0 : y) * 127.0f + t);
 	}
 }
 
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]){
 	// 	printf("Error!\n");
 	// 	return 2;
 	// }
-	if(!controlsSetup(throttle_callback)){
+	if(!controlsSetup(throttle_callback, NULL)){
 		joystickAvailable = 1;
 	}
 

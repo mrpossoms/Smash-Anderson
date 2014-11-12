@@ -17,35 +17,18 @@ struct JoystickState
 static int CONTROLS_JOYSTICK_COUNT = 0;
 static struct JoystickState CONTROLS_JOYSTICKS[10] = {0};
 static struct JoystickState* CONTROLS_THROTTLE_STICK = NULL;
-void (*CONTROLS_THROTTLE_CALLBACK)(float, float);
+static struct JoystickState* CONTROLS_BALANCE_STICK = NULL;
+void (*CONTROLS_THROTTLE_CALLBACK)(int, float*);
+void (*CONTROLS_BALANCE_CALLBACK)(int, float*);
 
-int controlsSetup(throttleCallback cb){
-	CONTROLS_THROTTLE_CALLBACK = cb;
-
-	// find the number of joysticks connected
-	for(int i = 0; i < 10; ++i){
-		if(glfwJoystickPresent(i)){
-			int axes = 0;
-			const float* values = glfwGetJoystickAxes(i, &axes);
-
-			struct JoystickState stick = {
-				.id = i,
-				.axes = axes,
-				.values = NULL
-			};
-			stick.values = (float*)malloc(sizeof(float) * axes);
-			memcpy(stick.values, values, sizeof(float) * axes);
-
-			CONTROLS_JOYSTICKS[CONTROLS_JOYSTICK_COUNT++] = stick;
-		}	
+void selectStick(struct JoystickState** stickOut)
+{
+	// reset the stick measurements
+	for(int i = CONTROLS_JOYSTICK_COUNT; i--;){
+		struct JoystickState* stick = CONTROLS_JOYSTICKS + i;
+		const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
+		memcpy(stick->values, values, sizeof(float) * stick->axes);
 	}
-	printf("%d joysticks found\n", CONTROLS_JOYSTICK_COUNT);
-
-	if(CONTROLS_JOYSTICK_COUNT == 0){
-		return -1;
-	}
-
-	printf("Please move the throttle stick to select it.\n");
 
 	while(1){
 		for(int i = CONTROLS_JOYSTICK_COUNT; i--;){
@@ -64,17 +47,15 @@ int controlsSetup(throttleCallback cb){
 
 			// this stick probably moved!
 			if(fabs(lCurrent - lLast) > 0.01f){
-				CONTROLS_THROTTLE_STICK = stick;
-				return 0;
+				*stickOut = stick;
+				return;
 			}
 		}
-
-		usleep(10000);
 	}
 }
 
-int controlsPoll(){
-	struct JoystickState* stick = CONTROLS_THROTTLE_STICK;
+void pollStick(struct JoystickState* stick, void(*cb)(int, float*))
+{
 	const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
 
 	assert(stick->axes >= 2);
@@ -91,9 +72,55 @@ int controlsPoll(){
 
 	// this stick probably moved!
 	if(fabs(lCurrent - lLast) > 0.001f){
-		CONTROLS_THROTTLE_CALLBACK(values[0], values[1]);
-		return 0;
+		cb(stick->axes, values);
+		return;
+	}
+}
+
+int controlsSetup(stickCallback throttleCb, stickCallback balanceCb){
+	CONTROLS_THROTTLE_CALLBACK = throttleCb;
+
+	// find the number of joysticks connected
+	for(int i = 0; i < 10; ++i){
+		if(glfwJoystickPresent(i)){
+			int axes = 0;
+			const float* values = glfwGetJoystickAxes(i, &axes);
+			printf("Stick %d: with %d axes\n", i, axes);
+
+			struct JoystickState stick = {
+				.id = i,
+				.axes = axes,
+				.values = NULL
+			};
+			stick.values = (float*)malloc(sizeof(float) * axes);
+			memcpy(stick.values, values, sizeof(float) * axes);
+
+			CONTROLS_JOYSTICKS[CONTROLS_JOYSTICK_COUNT++] = stick;
+		}	
+	}
+	printf("%d joysticks found\n", CONTROLS_JOYSTICK_COUNT);
+
+	if(CONTROLS_JOYSTICK_COUNT == 0){
+		return -1;
 	}
 
-	return -1;
+	printf("Please move the throttle stick to select it...");
+	fflush(stdout);
+	selectStick(&CONTROLS_THROTTLE_STICK);
+	printf("Selected!\n");
+	sleep(1);
+
+	// printf("Please move the balance stick to select it...");
+	// fflush(stdout);
+	// selectStick(&CONTROLS_BALANCE_STICK);
+	// printf("Selected!\n");
+
+	return 0;
+}
+
+int controlsPoll(){
+	pollStick(CONTROLS_THROTTLE_STICK, CONTROLS_THROTTLE_CALLBACK);
+	// pollStick(CONTROLS_BALANCE_STICK, CONTROLS_BALANCE_CALLBACK);
+
+	return 0;
 }
