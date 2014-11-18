@@ -12,11 +12,6 @@ int main(int argc, char* argv[])
 	unsigned char lastHubState;
 	time_t lastContact;
 
-	if(argc != 2){
-		printf("Incorrect number of arguments. Please provided path to the servoblaster device\n");
-		return -1;
-	}
-
 	// start the servo driver
 	if(system("servod --p1pins=11,12,15,16")){
 		printf("Error! Failed to start servo driver daemon\n");
@@ -36,7 +31,7 @@ int main(int argc, char* argv[])
 	// initialize the control system
 	printf("Initializing control system...");
 	sleep(1);
-	if(!(fd_rotors = smashSpeedInit(argv[1]))){
+	if(!(fd_rotors = smashSpeedInit("/dev/servoblaster"))){
 		printf("Failed to open servo device\n");
 		return -4;
 	}

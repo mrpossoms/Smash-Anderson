@@ -8,7 +8,6 @@
 #include <indicurses.h>
 #include <libNEMA.h>
 #include <ardutalk.h>
-#include <Controls.h>
 #include <smash-telemetry.h>
 
 #include "smash-hub.h"
