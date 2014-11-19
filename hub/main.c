@@ -34,7 +34,7 @@ void* commHandler(void* args)
 	while(1){
 		smashReceiveMsg(fd_radio, &msgType, buf);
 		//if(msgType == 0) continue;
-		printf("Message type %x\n", msgType);
+		//printf("Message type %x\n", msgType);
 
 		switch(msgType){
 			case MSG_CODE_THROTTLE:

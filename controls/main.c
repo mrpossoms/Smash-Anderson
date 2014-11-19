@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "smash-speed.h"
 #include "smash-hub.h"
 
@@ -24,6 +25,7 @@ int main(int argc, char* argv[])
 		printf("Failed to attach to shared memory segment\n");
 		return -3;
 	}
+	assert(state);
 	printf("Shared memory attached!\n");
 
 	state->subSystemOnline |= SMASH_HUB_MSK_SPEED;
@@ -38,18 +40,18 @@ int main(int argc, char* argv[])
 	printf("OK!\n");
 
 	// wait until the hub comes online before beginning operation
-	write(1, ".", 1);
 	printf("Waiting for hub to start...");
 	while(!state->subSystemOnline & SMASH_HUB_MSK){
 		usleep(10000);
 	}
-	lastContact  = time();
+
+	lastContact  = time(NULL);
 	lastHubState = state->subSystemLife[SMASH_HUB_I];
 	printf("hub started!\n");
 
 	// keep updating the speed as it changes
 	while(!(state->subSystemShouldShutdown & SMASH_HUB_MSK_SPEED)){
-		time_t now = time();
+		time_t now = time(NULL);
 		unsigned char hubState = state->subSystemLife[SMASH_HUB_I];
 
 		if(lastHubState != hubState){ // we are hearing back from the hub, all is well

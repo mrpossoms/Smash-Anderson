@@ -84,7 +84,7 @@ void* __IMUpoller(void* params){
 			ORIENTATION[2] *= DEG_TO_RAD;
 
 			// check to see if offsets have been set yet
-			if(!(YPR_OFFSETS[0] + YPR_OFFSETS[1] + YPR_OFFSETS[2])){
+/*			if(!(YPR_OFFSETS[0] + YPR_OFFSETS[1] + YPR_OFFSETS[2])){
 				memcpy(YPR_OFFSETS, ORIENTATION, sizeof(YPR_OFFSETS));	
 			}
 
@@ -92,7 +92,7 @@ void* __IMUpoller(void* params){
 			ORIENTATION[0] -= YPR_OFFSETS[0];
 			ORIENTATION[1] -= YPR_OFFSETS[1];
 			ORIENTATION[2] -= YPR_OFFSETS[2];
-
+*/
 #ifdef __IMU_DEBUG
 			printf("OK %d (%f, %f, %f) w(%f, %f, %f)\n", bytes, ORIENTATION[0], ORIENTATION[1], ORIENTATION[2], ORIENTATION[3], ORIENTATION[4], ORIENTATION[5]);
 #endif
