@@ -84,7 +84,8 @@ static void throttle_callback(int axes, float* values)
 	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
 
 	if(joystickAvailable){
-		float t = 127.0f * (values[4] * 0.5f + 0.5f);
+		values[4] = values[4] * 0.5f + 0.5f;
+		float t = 126.0f * values[4];
 
 		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 127.0f + t);
 		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 127.0f + t);
@@ -150,11 +151,13 @@ static void update(int value)
 		controlsPoll();		
 	}
 
-	// if((statusTimer--) == 240){
-	// 	//printf("Requesting status...\n");
-	// 	smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
-	// 	statusTimer = 0xFF;
-	// }
+	if(radioEnabled){
+		if((statusTimer--) == 250){
+			//printf("Requesting status...\n");
+			smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
+			statusTimer = 0xFF;
+		}
+	}
 
     double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
     int time = (int)t;
@@ -219,7 +222,7 @@ static void display(void){
 	for(int i = 3; i--;){
 		float delta = state.imuAngles[i] - displayAngles[i];
 		if(delta == 0) continue;
-		displayAngles[i] += delta * 0.1f;
+		displayAngles[i] = state.imuAngles[i];//+= delta * 0.1f;
 	}
 
 	glRotatef(-displayAngles[0] * (180.0 / M_PI) + 45, 0.0f, 1.0f, 0.0f);
