@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include "smash-speed.h"
 #include "smash-hub.h"
 
@@ -11,11 +12,6 @@ int main(int argc, char* argv[])
 	unsigned char lastRotorStates[4];
 	unsigned char lastHubState;
 	time_t lastContact;
-
-	if(argc != 2){
-		printf("Incorrect number of arguments. Please provided path to the servoblaster device\n");
-		return -1;
-	}
 
 	// start the servo driver
 	if(system("servod --p1pins=11,12,15,16")){
@@ -29,6 +25,7 @@ int main(int argc, char* argv[])
 		printf("Failed to attach to shared memory segment\n");
 		return -3;
 	}
+	assert(state);
 	printf("Shared memory attached!\n");
 
 	state->subSystemOnline |= SMASH_HUB_MSK_SPEED;
@@ -36,25 +33,25 @@ int main(int argc, char* argv[])
 	// initialize the control system
 	printf("Initializing control system...");
 	sleep(1);
-	if(!(fd_rotors = smashSpeedInit(argv[1]))){
+	if(!(fd_rotors = smashSpeedInit("/dev/servoblaster"))){
 		printf("Failed to open servo device\n");
 		return -4;
 	}
 	printf("OK!\n");
 
 	// wait until the hub comes online before beginning operation
-	write(1, ".", 1);
 	printf("Waiting for hub to start...");
 	while(!state->subSystemOnline & SMASH_HUB_MSK){
 		usleep(10000);
 	}
-	lastContact  = time();
+
+	lastContact  = time(NULL);
 	lastHubState = state->subSystemLife[SMASH_HUB_I];
 	printf("hub started!\n");
 
 	// keep updating the speed as it changes
 	while(!(state->subSystemShouldShutdown & SMASH_HUB_MSK_SPEED)){
-		time_t now = time();
+		time_t now = time(NULL);
 		unsigned char hubState = state->subSystemLife[SMASH_HUB_I];
 
 		if(lastHubState != hubState){ // we are hearing back from the hub, all is well
