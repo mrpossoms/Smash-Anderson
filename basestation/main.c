@@ -4,11 +4,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <GLFW/glfw3.h>
-#include <GLUT/glut.h>
+#include <glut.h>
 #include <glu.h>
 #include <smash-telemetry.h>
 #include <ardutalk.h>
 #include "controls.h"
+
+#ifndef M_PI
+#define M_PI 3.14159
+#endif
 
 static GLFWwindow* window = NULL;
 static int radioFd;
@@ -76,7 +80,7 @@ void drawString(int x, int y, char *string, void* font){
 	}
 }
 
-static void throttle_callback(int axes, float* values)
+static void throttle_callback(int axes, const float* values)
 {
 	float x = values[0], y = values[1];
 
@@ -84,8 +88,8 @@ static void throttle_callback(int axes, float* values)
 	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
 
 	if(joystickAvailable){
-		values[4] = values[4] * 0.5f + 0.5f;
-		float t = 126.0f * values[4];
+		float trigger = values[4] * 0.5f + 0.5f;
+		float t = 126.0f * trigger;
 
 		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 127.0f + t);
 		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 127.0f + t);
