@@ -40,15 +40,15 @@ void* commHandler(void* args)
 			case MSG_CODE_THROTTLE:
 				{
 					RotorStates temp = {0};
-					memcpy(buf, &temp, sizeof(RotorStates));
-
+					memcpy(state->speedTargets, buf, sizeof(state->speedTargets));
+					
 					sprintf(buf, "Rotors = {%d, %d, %d, %d}\n",
-						(int)temp[0],
-						(int)temp[1],
-						(int)temp[2],
-						(int)temp[3]
-					); 
-					icText(3,3,buf);
+						(int)state->speedTargets[0],
+						(int)state->speedTargets[1],
+						(int)state->speedTargets[2],
+						(int)state->speedTargets[3]
+					);
+					icText(2,3,buf);
 				}
 				break;
 			case MSG_CODE_STATUS_REQ:
@@ -75,18 +75,6 @@ int main(int argc, const char* argv[]){
 
 	fd_radio = smashTelemetryInit(argv[1]);
 
-	// start servo driver and check the status
-	printf("Preparing servo driver...");
-	if(system("sh ./servo.sh")){
-		printf("Error!\n");
-
-		if(argc <= 1) return -1;
-		else{
-			printf("Ignoring servo driver startup.\n");
-		}
-	}
-	printf("OK!\n");
-
 	printf("Attaching to, or creating shared memory segment...");
 	state = createAndAttach(SMASH_SHM_KEY);	
 	if(state){
@@ -96,7 +84,7 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
-//	assert(!icInit());
+	assert(!icInit());
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 

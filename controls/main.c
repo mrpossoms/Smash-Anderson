@@ -28,7 +28,8 @@ int main(int argc, char* argv[])
 	assert(state);
 	printf("Shared memory attached!\n");
 
-	state->subSystemOnline |= SMASH_HUB_MSK_SPEED;
+	// say the system is offline for now..
+	state->subSystemOnline &= ~SMASH_HUB_MSK_SPEED;
 	
 	// initialize the control system
 	printf("Initializing control system...");
@@ -47,6 +48,7 @@ int main(int argc, char* argv[])
 
 	lastContact  = time(NULL);
 	lastHubState = state->subSystemLife[SMASH_HUB_I];
+	state->subSystemOnline |= SMASH_HUB_MSK_SPEED;
 	printf("hub started!\n");
 
 	// keep updating the speed as it changes
@@ -64,11 +66,13 @@ int main(int argc, char* argv[])
 		else{ // we haven't heard from the hub in a second...
 			// Slowly power down
 			// TODO figure out the decay for realz
-			int i =4;
+			int i = 4;
 			for(;i--;){
 				lastRotorStates[i] *= 0.95f;
 			}			
 		}
+
+		printf("%u %u %u %u\n", lastRotorStates[0], lastRotorStates[1], lastRotorStates[2], lastRotorStates[3]);
 		
 		smashSpeedSet(fd_rotors, lastRotorStates);
 		usleep(10000);
