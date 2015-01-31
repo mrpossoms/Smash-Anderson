@@ -18,8 +18,8 @@ static int CONTROLS_JOYSTICK_COUNT = 0;
 static struct JoystickState CONTROLS_JOYSTICKS[10] = {0};
 static struct JoystickState* CONTROLS_THROTTLE_STICK = NULL;
 static struct JoystickState* CONTROLS_BALANCE_STICK = NULL;
-void (*CONTROLS_THROTTLE_CALLBACK)(int, float*);
-void (*CONTROLS_BALANCE_CALLBACK)(int, float*);
+void (*CONTROLS_THROTTLE_CALLBACK)(int, const float*);
+void (*CONTROLS_BALANCE_CALLBACK)(int, const float*);
 
 void selectStick(struct JoystickState** stickOut)
 {
@@ -54,7 +54,7 @@ void selectStick(struct JoystickState** stickOut)
 	}
 }
 
-void pollStick(struct JoystickState* stick, void(*cb)(int, float*))
+void pollStick(struct JoystickState* stick, void(*cb)(int, const float*))
 {
 	const float* values = glfwGetJoystickAxes(stick->id, &stick->axes);
 

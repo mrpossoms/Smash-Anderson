@@ -3,6 +3,7 @@
 
 #include "smash-hub.h"
 #include <ardutalk.h>
+#include <pthread.h>
 
 // message codes, LSb is 0. Reserved as ACK flag
 #define MSG_CODE_THROTTLE   0xC2
@@ -26,6 +27,8 @@ struct SmashData{
 	unsigned char len;
 	byte buf[128];
 };
+
+extern pthread_mutex_t SMASH_TELEM_LOCK;
 
 int  smashTelemetryInit(const char* dev);
 void smashTelemetryShutdown(int fd);

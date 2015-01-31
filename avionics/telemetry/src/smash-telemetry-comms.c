@@ -24,6 +24,9 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	size_t msgSize = 0;
 	byte   msgType = *type;
 
+	// accquire the lock
+	pthread_mutex_lock(&SMASH_TELEM_LOCK);
+
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
 	msgType = *type;
@@ -47,6 +50,8 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 			msgSize = sizeof(struct SmashData);
 			break;
 		default:
+			// release the lock
+			pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 			if(result > 0){
 				return TELEM_ERR_BAD_CODE;
 			}
@@ -61,6 +66,8 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 		
 		// check the message size
 		if(result != msgSize){
+			// release the lock
+			pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 			return TELEM_ERR_BAD_MSG | TELEM_ERR_TIMEOUT;
 		}
 	}
@@ -68,6 +75,9 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	// everything is ok to this point, ack the message
 	msgType |= MSG_CODE_ACK;
 	atWrite(fd, &msgType, sizeof(byte));
+
+	// release the lock
+	pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 
 	return result;
 }
@@ -95,6 +105,8 @@ int smashSendMsg(int fd, byte type, void* msg){
 			msgSize = sizeof(struct SmashData);
 			break;
 		default:
+			// release the lock
+			pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 			if(result > 0){
 				return TELEM_ERR_BAD_CODE;
 			}
@@ -110,6 +122,9 @@ int smashSendMsg(int fd, byte type, void* msg){
 
 	// read an ack from the peer
 	result = atRead(fd, &ackType, sizeof(byte));
+
+	// release the lock
+	pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 
 	// ensure the ack recieved was for the expected message
 	// and confirm that it was indeed an ack

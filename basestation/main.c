@@ -4,11 +4,15 @@
 #include <unistd.h>
 #include <string.h>
 #include <GLFW/glfw3.h>
-#include <GLUT/glut.h>
+#include <glut.h>
 #include <glu.h>
 #include <smash-telemetry.h>
 #include <ardutalk.h>
 #include "controls.h"
+
+#ifndef M_PI
+#define M_PI 3.14159
+#endif
 
 static GLFWwindow* window = NULL;
 static int radioFd;
@@ -76,7 +80,7 @@ void drawString(int x, int y, char *string, void* font){
 	}
 }
 
-static void throttle_callback(int axes, float* values)
+static void throttle_callback(int axes, const float* values)
 {
 	float x = values[0], y = values[1];
 
@@ -84,7 +88,8 @@ static void throttle_callback(int axes, float* values)
 	//smashSendMsg(radioFd, MSG_CODE_THROTTLE, &throttle);
 
 	if(joystickAvailable){
-		float t = 127.0f * (values[4] * 0.5f + 0.5f);
+		float trigger = values[4] * 0.5f + 0.5f;
+		float t = 126.0f * trigger;
 
 		state.speedTargets[0] = (unsigned char)((-x < 0 ? 0 : -x) * 127.0f + t);
 		state.speedTargets[1] = (unsigned char)((x < 0 ? 0 : x) * 127.0f + t);
@@ -150,11 +155,13 @@ static void update(int value)
 		controlsPoll();		
 	}
 
-	// if((statusTimer--) == 240){
-	// 	//printf("Requesting status...\n");
-	// 	smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
-	// 	statusTimer = 0xFF;
-	// }
+	if(radioEnabled){
+		if((statusTimer--) == 250){
+			//printf("Requesting status...\n");
+			smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
+			statusTimer = 0xFF;
+		}
+	}
 
     double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
     int time = (int)t;
@@ -219,7 +226,7 @@ static void display(void){
 	for(int i = 3; i--;){
 		float delta = state.imuAngles[i] - displayAngles[i];
 		if(delta == 0) continue;
-		displayAngles[i] += delta * 0.1f;
+		displayAngles[i] = state.imuAngles[i];//+= delta * 0.1f;
 	}
 
 	glRotatef(-displayAngles[0] * (180.0 / M_PI) + 45, 0.0f, 1.0f, 0.0f);
