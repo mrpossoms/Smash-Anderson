@@ -2,9 +2,10 @@ NAME=BaseStation
 EDITOR=
 FLAGS=-Wint-to-pointer-cast -Wno-deprecated-declarations
 SRC=./src/*.c
-INC=-I./include  -I /Library/Frameworks/SDL2.framework/Headers -I/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/
+INC=-I./include -I/usr/local/include -I/opt/local/include/GL/ -I/usr/include  -I /Library/Frameworks/SDL2.framework/Headers -I/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/
 DST=./lib
-LINK= -lardutalk -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework GLUT
+LINK= -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo -framework GLUT /usr/lib/libardutalk.a 
+LIBS=-L /usr/local/lib/
 LIB=lib$(NAME).a
 DEP_SRC=./../avionics/telemetry/src/*.c
 DEP_INC=-I./../avionics/telemetry/include -I./../hub/include
@@ -15,7 +16,7 @@ TSTS=./tests/*.c
 
 all:
 ifdef NAME
-	gcc $(FLAGS) $(DEP_INC) $(INC) $(DEP_SRC) $(SRC) main.c $(LINK)
+	gcc $(FLAGS) $(DEP_INC) $(INC) $(LIBS) $(DEP_SRC) $(SRC) main.c $(LINK)
 else
 	@echo "Project not setup! Please run 'make setup' first."
 endif

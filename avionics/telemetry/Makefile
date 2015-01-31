@@ -1,8 +1,9 @@
 FLAGS=-Wint-to-pointer-cast
 SRC=./src/*.c
-INC=-I./include -I./../../hub/include
+INC=-I/usr/include -I./include -I./../../hub/include
+LIBS=
 DST=./lib
-LINK=-string -lardutalk
+LINK=-string /usr/lib/libardutalk.a
 LIB=libSmashTelemetry.a
 
 TSTINC=./tests/include
@@ -10,12 +11,12 @@ TST=./tests
 TSTS=./tests/*.c
 
 all:
-	gcc $(INC) -c $(SRC)
-		ar rcs $(DST)/$(LIB) *.o
-			rm *.o
+	gcc $(INC) $(LIBS) -c $(SRC)
+	ar rcs $(DST)/$(LIB) *.o
+	rm *.o
 
 testlib: $(SRC)
-	gcc -I$(INC) -I$(TSTINC) -c $(SRC)
+	gcc $(LIBS) -I$(INC) -I$(TSTINC) -c $(SRC)
 		ar rcs $(TST)/lib/$(LIB) *.o
 			rm *.o
 

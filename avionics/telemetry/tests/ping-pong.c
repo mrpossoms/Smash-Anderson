@@ -1,18 +1,25 @@
 #include "smash-telemetry.h"
 #include "smash-hub.h"
+#include <ardutalk.h>
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
- 
+#include <assert.h>
+
 #define DELAY 1000
- 
+
 static int fd_radio = 0, fd_file = 0;
  
 int main(int argc, char* argv[])
 {
+        int test = TELEM_ERR_BAD_CODE;
+
+        // printf("Val %x %d\n", test, test);
+        // assert(test < 0);
+
         switch(argc){
                 case 3:
                         fd_file  = open(argv[2], O_RDONLY);
@@ -35,12 +42,13 @@ int main(int argc, char* argv[])
         struct SmashData packet = {0};
         int fd_out = open("./out", O_CREAT | O_TRUNC | O_WRONLY);
 
+	AT_RXTX_SCRAM = 16;
         printf(fd_file ? "Writing\n" : "Reading\n");
         while(1){
                 if(!fd_file){
                         msgType = MSG_CODE_DATA;
                         int res = smashReceiveMsg(fd_radio, &msgType, &packet);
-                        
+
 			if(res > 0){
 				write(fd_out, packet.buf, packet.len);
 				printf("res %d\n", res);
@@ -60,7 +68,10 @@ int main(int argc, char* argv[])
 
                         if(data.len){
                                 msgType = MSG_CODE_DATA;
-                                smashSendMsg(fd_radio, msgType, &data);
+                                while(smashSendMsg(fd_radio, msgType, &data) < 0){
+                                        usleep(10000); // the packet was not sent successfully retry!
+                                        write(1, "*", 1);
+                                }
                                 write(1, ".", 1);
                         }
                 }

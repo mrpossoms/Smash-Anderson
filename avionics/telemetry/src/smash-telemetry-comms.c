@@ -28,7 +28,10 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 	int result = atRead(fd, type, sizeof(byte));
 	msgType = *type;
 
-	assert(result >= 0);
+	if(result <= 0){
+		return TELEM_ERR_TIMEOUT;
+	}
+	//assert(result >= 0);
 
 	switch(msgType){
 		case MSG_CODE_THROTTLE:
@@ -37,9 +40,9 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 		case MSG_CODE_STATUS:
 			msgSize = sizeof(struct SmashState);
 			break;
-		case MSG_CODE_STATUS_REQ:
-			msgSize = 0;
-			break;
+		// case MSG_CODE_STATUS_REQ:
+		// 	msgSize = 0;
+		// 	break;
 		case MSG_CODE_DATA:
 			msgSize = sizeof(struct SmashData);
 			break;
@@ -85,9 +88,9 @@ int smashSendMsg(int fd, byte type, void* msg){
 		case MSG_CODE_STATUS:
 			msgSize = sizeof(struct SmashState);
 			break;
-		case MSG_CODE_STATUS_REQ:
-			msgSize = 0;
-			break;
+		// case MSG_CODE_STATUS_REQ:
+		// 	msgSize = 0;
+		// 	break;
 		case MSG_CODE_DATA:
 			msgSize = sizeof(struct SmashData);
 			break;
