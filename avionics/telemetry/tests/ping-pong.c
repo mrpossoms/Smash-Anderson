@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
         struct SmashData packet = {0};
         int fd_out = open("./out", O_CREAT | O_TRUNC | O_WRONLY);
 
-	AT_RXTX_SCRAM = 16;
+	AT_RXTX_SCRAM = 0;
         printf(fd_file ? "Writing\n" : "Reading\n");
         while(1){
                 if(!fd_file){

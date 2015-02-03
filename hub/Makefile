@@ -79,7 +79,7 @@ clean:
 	find ./ -iname "*.o" -exec rm {} \;
 	find ./ -iname "*.out" -exec rm {} \;
 	find ./ -iname "*.bin" -exec rm {} \;
-
+	rm smash-anderson
 setup:
 ifndef NAME
 	@echo "Setting up project"

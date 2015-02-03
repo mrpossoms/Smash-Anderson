@@ -12,9 +12,11 @@
 
 #include "smash-hub.h"
 
+//#define USE_INDICURSES
+
 static float YPR[3];
 static struct SmashState* state = NULL;
-static GpsState gps_st = {0};
+static struct GpsHandler gps_st = {0};
 
 void printGpsCoords(GpsState* state){
 	char buf[256];
@@ -31,10 +33,20 @@ void* commHandler(void* args)
 	byte msgType;
 	byte buf[128];
 
+//	assert(0);
+
 	while(1){
+		char MSG_TYPE_BUF[128];
+		
+#ifndef USE_INDICURSES
+		write(1, ".", 1);
+#endif
+
+		icText(1, 1, "*");
 		smashReceiveMsg(fd_radio, &msgType, buf);
 		//if(msgType == 0) continue;
-		//printf("Message type %x\n", msgType);
+		sprintf(MSG_TYPE_BUF, "Message type %x\n", msgType);
+		icText(1, 1, MSG_TYPE_BUF);
 
 		switch(msgType){
 			case MSG_CODE_THROTTLE:
@@ -56,9 +68,10 @@ void* commHandler(void* args)
 					struct SmashState tempState;
 					memcpy(&tempState, state, sizeof(struct SmashState));
 					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
+					icText(1, 1, "STAT REQ");
 				}
 				break;
-			default:;
+			default:
 				printf("Unrecognized message!\n");
 		}
 	}
@@ -84,12 +97,16 @@ int main(int argc, const char* argv[]){
 		return -2;
 	}
 
+#ifdef USE_INDICURSES
 	assert(!icInit());
+#endif
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 
 	while(1){
 		char buf[128];
+		GpsState* gps = &gps_st.state;		
+
 		clear();
 		sprintf(buf, 
 			"ypr = ( %.5f, %.5f, %.5f )",
@@ -101,17 +118,19 @@ int main(int argc, const char* argv[]){
 		icText(2, 2, buf);
 		 	
 		//smashSpeedSet(fd_rotors, rotor_st);
-		/*if(lnReadMsg(gps_buf, 255)){
-			lnParseMsg(&gps_st, gps_buf); 
-		}*/
+		//if(lnReadMsg(buf, 255)){
+		//	lnParseMsg(gps_st, buf); 
+		//}
 
-		if(gps_st.Fix)
-			printGpsCoords(&gps_st);		
+		//if(gps->Fix)
+		//	printGpsCoords(gps);		
 
 		++state->subSystemLife[SMASH_HUB_I];
 	
 		usleep(10000);	
+#ifdef USE_INDICURSES
 		icPresent();
+#endif
 	}
 	
 	printf("Done\n");
