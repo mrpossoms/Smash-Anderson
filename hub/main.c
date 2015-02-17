@@ -8,11 +8,11 @@
 #include <indicurses.h>
 #include <libNEMA.h>
 #include <ardutalk.h>
-#include <smash-telemetry.h>
+#include "smash-telemetry.h"
 
 #include "smash-hub.h"
 
-//#define USE_INDICURSES
+#define USE_INDICURSES
 
 static float YPR[3];
 static struct SmashState* state = NULL;
@@ -40,11 +40,8 @@ void* commHandler(void* args)
 		
 #ifndef USE_INDICURSES
 		write(1, ".", 1);
-#endif
-
-		icText(1, 1, "*");
 		smashReceiveMsg(fd_radio, &msgType, buf);
-		//if(msgType == 0) continue;
+#endif
 		sprintf(MSG_TYPE_BUF, "Message type %x\n", msgType);
 		icText(1, 1, MSG_TYPE_BUF);
 
@@ -53,7 +50,6 @@ void* commHandler(void* args)
 				{
 					RotorStates temp = {0};
 					memcpy(state->speedTargets, buf, sizeof(state->speedTargets));
-					
 					sprintf(buf, "Rotors = {%d, %d, %d, %d}\n",
 						(int)state->speedTargets[0],
 						(int)state->speedTargets[1],
@@ -68,13 +64,17 @@ void* commHandler(void* args)
 					struct SmashState tempState;
 					memcpy(&tempState, state, sizeof(struct SmashState));
 					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
-					icText(1, 1, "STAT REQ");
+					icText(2, 3, "STAT REQ");
 				}
 				break;
+#ifndef USE_INDICURSES
 			default:
 				printf("Unrecognized message!\n");
+#endif
 		}
 	}
+
+	return NULL;
 }
 
 int main(int argc, const char* argv[]){
@@ -87,7 +87,8 @@ int main(int argc, const char* argv[]){
 	}
 
 	fd_radio = smashTelemetryInit(argv[1]);
-
+	AT_RXTX_SCRAM = 0;
+	
 	printf("Attaching to, or creating shared memory segment...");
 	state = createAndAttach(SMASH_SHM_KEY);	
 	if(state){

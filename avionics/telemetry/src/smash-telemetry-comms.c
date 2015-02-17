@@ -26,12 +26,13 @@ int smashReceiveMsg(int fd, byte* type, void* msg){
 
 	// accquire the lock
 	pthread_mutex_lock(&SMASH_TELEM_LOCK);
-
+	
 	// wait for the peer to indicate what message is incomming
 	int result = atRead(fd, type, sizeof(byte));
 	msgType = *type;
 
 	if(result <= 0){
+		pthread_mutex_unlock(&SMASH_TELEM_LOCK);
 		return TELEM_ERR_TIMEOUT;
 	}
 	//assert(result >= 0);
