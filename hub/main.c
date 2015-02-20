@@ -12,7 +12,7 @@
 
 #include "smash-hub.h"
 
-//#define USE_INDICURSES
+#define USE_INDICURSES
 
 static float YPR[3];
 static struct SmashState* state = NULL;
@@ -40,8 +40,10 @@ void* commHandler(void* args)
 		msgType = 0;		
 #ifndef USE_INDICURSES
 		write(1, ".", 1);
-		smashReceiveMsg(fd_radio, &msgType, buf);
 #endif
+
+		smashReceiveMsg(fd_radio, &msgType, buf);
+		
 		sprintf(MSG_TYPE_BUF, "Message type %x\n", msgType);
 		icText(1, 1, MSG_TYPE_BUF);
 
@@ -66,7 +68,10 @@ void* commHandler(void* args)
 					memcpy(&tempState, state, sizeof(struct SmashState));
 					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
 					icText(2, 3, "STAT REQ");
+					
+#ifndef USE_INDICURSES
 					printf("STAT REQ\n");
+#endif
 				}
 				break;
 #ifndef USE_INDICURSES
@@ -82,6 +87,8 @@ void* commHandler(void* args)
 int main(int argc, const char* argv[]){
 	int fd_radio = 0;
 	pthread_t commThread;
+
+	printf("Sizeof state: %d\n", sizeof(struct SmashState));
 
 	if(argc != 2){
 		printf("Missing radio device path parameter\n");
