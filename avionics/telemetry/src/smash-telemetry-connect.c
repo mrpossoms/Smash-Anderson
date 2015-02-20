@@ -1,8 +1,8 @@
-#include "smash-telemetry.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ardutalk.h>
+#include <pthread.h>
+#include "smash-telemetry.h"
 
 pthread_mutex_t SMASH_TELEM_LOCK;
 
