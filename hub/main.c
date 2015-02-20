@@ -12,7 +12,7 @@
 
 #include "smash-hub.h"
 
-#define USE_INDICURSES
+//#define USE_INDICURSES
 
 static float YPR[3];
 static struct SmashState* state = NULL;
@@ -30,14 +30,14 @@ void printGpsCoords(GpsState* state){
 void* commHandler(void* args)
 {
 	int fd_radio = *((int*)args);
-	byte msgType;
+	byte msgType = 0;
 	byte buf[128];
 
 //	assert(0);
 
 	while(1){
 		char MSG_TYPE_BUF[128];
-		
+		msgType = 0;		
 #ifndef USE_INDICURSES
 		write(1, ".", 1);
 		smashReceiveMsg(fd_radio, &msgType, buf);
@@ -57,6 +57,7 @@ void* commHandler(void* args)
 						(int)state->speedTargets[3]
 					);
 					icText(2,3,buf);
+					printf(buf);
 				}
 				break;
 			case MSG_CODE_STATUS_REQ:
@@ -65,11 +66,12 @@ void* commHandler(void* args)
 					memcpy(&tempState, state, sizeof(struct SmashState));
 					smashSendMsg(fd_radio, MSG_CODE_STATUS, &tempState);
 					icText(2, 3, "STAT REQ");
+					printf("STAT REQ\n");
 				}
 				break;
 #ifndef USE_INDICURSES
 			default:
-				printf("Unrecognized message!\n");
+				printf("Unrecognized message! %c\n", msgType);
 #endif
 		}
 	}
