@@ -156,7 +156,7 @@ static void update(int value)
 	}
 
 	if(radioEnabled){
-		if((statusTimer--) == 250){
+		if((statusTimer--) == 150){
 			//printf("Requesting status...\n");
 			smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
 			statusTimer = 0xFF;

@@ -17,8 +17,8 @@ all:
 
 testlib: $(SRC)
 	gcc $(LIBS) -I$(INC) -I$(TSTINC) -c $(SRC)
-		ar rcs $(TST)/lib/$(LIB) *.o
-			rm *.o
+	ar rcs $(TST)/lib/$(LIB) *.o
+	rm *.o
 
 tests: testlib
 	$(foreach test, $(TSTS), echo $(test);)
@@ -28,8 +28,8 @@ install:
 	cp $(DST)/*.a /usr/lib
 clean:
 	find ./ -iname "*.a" -exec rm {} \;
-		find ./ -iname "*.o" -exec rm {} \;
-			find ./ -iname "*.out" -exec rm {} \;
+	find ./ -iname "*.o" -exec rm {} \;
+	find ./ -iname "*.out" -exec rm {} \;
 setup:
 	echo 'Setting up project'
 	mkdir $(TST) $(DST) $(INC) ./src

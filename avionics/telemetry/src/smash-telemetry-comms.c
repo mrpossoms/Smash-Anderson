@@ -1,11 +1,13 @@
-#include "smash-telemetry.h"
-#include <ardutalk.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
+#include "smash-telemetry.h"
 
 #define DELAY 18000
+
+pthread_mutex_t SMASH_TELEM_LOCK;
 
 void __dump(char* buf, int len){
 	int i = 0;	
