@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define SMASH_DEBUG_SPEED
+
 int smashSpeedInit(const char* dev){
 	int fd = -1;
 	if((fd = open(dev, O_WRONLY)) < 0){
@@ -17,6 +19,10 @@ void smashSpeedSet(int fd, unsigned char* rotors){
 	for(i = 4; i--;){
 		char buf[8] = {0};
 		sprintf(buf, "%d=%d%\n", i, (int)(rotors[i] / 2.55f));
+
+#ifdef SMASH_DEBUG_SPEED
+		printf("%s\n", buf);
+#endif
 		write(fd, buf, strlen(buf));
 	}	
 }
