@@ -156,7 +156,7 @@ static void update(int value)
 	}
 
 	if(radioEnabled){
-		if((statusTimer--) == 150){
+		if((statusTimer--) == 240){
 			//printf("Requesting status...\n");
 			smashSendMsg(radioFd, MSG_CODE_STATUS_REQ, NULL);
 			statusTimer = 0xFF;
@@ -257,6 +257,8 @@ static void display(void){
 int main(int argc, char* argv[]){
 	radioEnabled = 1;
 	joystickAvailable = 0;
+
+        printf("Sizeof state: %d\n", sizeof(struct SmashState));
 
 	if(argc != 2){
 		printf("Error: missing argument for radio device.\n\tUsage: basestation [device path]\n");
