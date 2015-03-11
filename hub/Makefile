@@ -18,7 +18,7 @@ ifdef NAME
 	#gcc -I$(INC) -c $(SRC)
 	#ar rcs $(DST)/$(LIB) *.o
 	#rm *.o
-	gcc $(DEP_INC) $(INC) -L/usr/lib $(DEP_SRC) main.c $(LINK) -o smash-anderson
+	gcc $(DEP_INC) $(INC) -L/usr/lib $(DEP_SRC) $(SRC) main.c $(LINK) -o smash-anderson
 else
 	@echo "Project not setup! Please run 'make setup' first."
 endif

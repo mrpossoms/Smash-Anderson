@@ -3,6 +3,9 @@
 
 #include "smash-hub.h"
 
-int stabilize(struct SmashState* state, unsigned char* throttleTargets);
+extern unsigned char MIN_THROTTLE;
+
+void stblInit();
+int  stblUpdate(struct SmashState* state);
 
 #endif

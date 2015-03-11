@@ -9,10 +9,10 @@
 #include <libNEMA.h>
 #include <ardutalk.h>
 #include "smash-telemetry.h"
-
 #include "smash-hub.h"
+#include "stabilization.h"
 
-#define USE_INDICURSES
+//#define USE_INDICURSES
 
 static float YPR[3];
 static struct SmashState* state = NULL;
@@ -113,6 +113,8 @@ int main(int argc, const char* argv[]){
 
 	pthread_create(&commThread, NULL, commHandler,&fd_radio);
 
+	stblInit();
+
 	while(1){
 		char buf[128];
 		GpsState* gps = &gps_st.state;		
@@ -126,7 +128,9 @@ int main(int argc, const char* argv[]){
 		);
 
 		icText(2, 2, buf);
-		 	
+		
+	
+		stblUpdate(state);	
 		//smashSpeedSet(fd_rotors, rotor_st);
 		//if(lnReadMsg(buf, 255)){
 		//	lnParseMsg(gps_st, buf); 
